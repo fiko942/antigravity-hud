@@ -24,6 +24,10 @@
 - 🎯 **Smart Dual-Interaction Modes**:
   - **Idle / Ready Mode**: The widget collapses flush with the notch, displaying only a subtle glowing emerald bottom rim and status dot. Hovering your mouse drops down the full card; moving away auto-closes it.
   - **Active Working Mode** (*Thinking / Editing Code / Running Tools*): The widget stays tucked into the notch with a pulsing Neon Purple/Cyan rim so it doesn't obstruct your workspace. **Clicking the notch toggles it open / closed** at your convenience.
+- 🔍 **Granular Tool & Step Observability**: Live extraction of target filenames (e.g. `Editing src/main.swift`), command lines, and step numbers (`Step #4`) directly from the agent log stream.
+- 🔊 **Sensory Audio-Haptic Engine**: Native trackpad haptic pulses on state transitions + subtle completion audio chimes (`NSSound`).
+- 🎨 **Dynamic Theme Presets**: User-customizable neon color themes (`Cyberpunk`, `Matrix`, `Sunset`, `Dracula`) via `~/.config/antigravity-hud/theme.json`.
+- ⚡ **Interactive Action Controls**: Click to open active files directly in your editor/Finder, plus an emergency abort button (🛑 `ABORT`).
 - ⚡ **Neural Equalizer Waveform**: 4-bar dynamic audio/cyberizer animation rendered with CoreAnimation (`CAKeyframeAnimation`) while the AI executes tasks.
 - 🚀 **Auto-Start at Login**: Self-registers a native macOS `LaunchAgent` on first launch (`com.google.antigravity.hud.plist`), ensuring zero setup required.
 - 🔒 **Kernel Mutex**: Single-instance lock via `flock` on `/tmp/antigravity-hud.lock` prevents duplicate windows.
@@ -70,15 +74,33 @@ open build/AntigravityHUD.app
 ```
 antigravity-hud/
 ├── src/
-│   └── main.swift          # Core AppKit & CoreAnimation implementation
+│   ├── App/
+│   │   └── AppDelegate.swift        # Main lifecycle, mouse tracking, & context menu
+│   ├── Brain/
+│   │   ├── AgentActivity.swift      # Activity data model
+│   │   └── BrainWatcher.swift       # Async JSONL seek & log parsing
+│   ├── Core/
+│   │   ├── LaunchAgentManager.swift # Auto-register login daemon
+│   │   ├── SensoryManager.swift     # Trackpad haptics & completion chimes
+│   │   └── SingleInstanceMutex.swift# Kernel mutex flock locking
+│   ├── Themes/
+│   │   ├── ThemeManager.swift       # State color palettes & config persistence
+│   │   └── ThemeStyle.swift         # Dynamic notch geometry shapes & glitch specs
+│   ├── UI/
+│   │   ├── AntigravityNotchPanel.swift # AppKit floating panel at Level 102
+│   │   ├── CyberEqualizerLayer.swift   # 4-bar CoreAnimation waveform
+│   │   ├── GlitchOverlayLayer.swift    # Cyberpunk chromatic shift glitch
+│   │   └── NotchIslandContentView.swift# Dynamic notch shape drawing & kebab menu
+│   └── main.swift                   # Clean application entry point
 ├── Resources/
-│   ├── AppIcon.icns        # High-DPI macOS application icon
-│   └── Info.plist          # macOS bundle metadata
+│   ├── AppIcon.icns                 # High-DPI macOS application icon
+│   ├── Info.plist                   # macOS bundle metadata
+│   └── theme.example.json           # Example theme configuration
 ├── docs/
-│   └── ARCHITECTURE.md     # Engineering deep dive & hardware notch specs
-├── build.sh                # Production compiler & DMG release generator
-├── package.json            # Tooling & metadata
-├── LICENSE                 # MIT License
+│   └── ARCHITECTURE.md              # Engineering deep dive & hardware notch specs
+├── build.sh                         # Production modular compiler & DMG generator
+├── package.json                     # Tooling & metadata
+├── LICENSE                          # MIT License
 └── README.md
 ```
 

@@ -15,8 +15,9 @@ mkdir -p "${APP_DIR}/Contents/MacOS"
 mkdir -p "${APP_DIR}/Contents/Resources"
 mkdir -p "${DMG_STAGING}"
 
-echo "==> Compiling Swift native binary..."
-swiftc -O "${SCRIPT_DIR}/src/main.swift" \
+echo "==> Compiling Swift native binary from modular sources..."
+SWIFT_FILES=$(find "${SCRIPT_DIR}/src" -name "*.swift" | sort)
+swiftc -O ${SWIFT_FILES} \
     -o "${APP_DIR}/Contents/MacOS/AntigravityHUD"
 
 echo "==> Copying App metadata and icon..."

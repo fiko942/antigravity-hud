@@ -3,8 +3,9 @@
 This repository contains the native macOS Dynamic Notch Island application for Google Antigravity AI Agent.
 
 ## Core Rules & Architecture
-1. **Source Code**: Single-file high-performance Swift in `src/main.swift`.
-2. **Build System**: Run `bash build.sh` to compile `build/AntigravityHUD.app` and `build/AntigravityHUD-v1.0.0.dmg`.
+1. **Source Code**: Modular Swift architecture organized in `src/Core/` (Mutex, Sensory, LaunchAgent), `src/Themes/` (Styles & Manager), `src/Brain/` (Watcher & Activity), `src/UI/` (Notch Panel, Island View, Equalizer & Glitch), `src/App/` (AppDelegate), and `src/main.swift` (Entry Point).
+2. **Build & Live Installation Protocol (MANDATORY)**:
+   - Whenever any code or resource is modified, you MUST automatically run `bash build.sh`, install it into `/Applications/AntigravityHUD.app`, restart the running application (`killall AntigravityHUD 2>/dev/null || true && open /Applications/AntigravityHUD.app`), and verify with `pgrep -fl AntigravityHUD` so changes are immediately live on the user's system.
 3. **Documentation Directory**:
    - `docs/ARCHITECTURE.md`: Geometric alignment, layer levels, and state machine.
    - `docs/TECHNICAL_SPEC.md`: Complete display matrices, coordinate formulas, and streaming protocol.

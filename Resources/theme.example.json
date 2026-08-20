@@ -1,0 +1,31 @@
+{
+  "activeTheme": "cyberpunk",
+  "soundEnabled": true,
+  "hapticsEnabled": true,
+  "themes": {
+    "cyberpunk": {
+      "idle": "#00E073",
+      "thinking": "#BF5AF2",
+      "working": "#00F0FF",
+      "done": "#34D399"
+    },
+    "matrix": {
+      "idle": "#00FF41",
+      "thinking": "#008F11",
+      "working": "#00FF66",
+      "done": "#39FF14"
+    },
+    "sunset": {
+      "idle": "#FFB800",
+      "thinking": "#FF007A",
+      "working": "#FF6B00",
+      "done": "#00F0FF"
+    },
+    "dracula": {
+      "idle": "#50FA7B",
+      "thinking": "#BD93F9",
+      "working": "#8BE9FD",
+      "done": "#50FA7B"
+    }
+  }
+}
