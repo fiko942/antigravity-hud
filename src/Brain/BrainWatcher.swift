@@ -161,12 +161,15 @@ public class BrainWatcher {
                                 )
                             }
                         }
-                    } else if type == "RUN_COMMAND" || type.contains("FILE") || type.contains("DIR") {
+                    } else if isActionExecutionType(type) {
                         idleTimer?.invalidate()
+                        let (actionTitle, defaultDetail) = actionHeaderAndDetail(for: type)
+                        let toolSummary = json["tool_summary"] as? String ?? (json["tool_action"] as? String ?? defaultDetail)
+
                         updateActivity(
                             state: "working",
-                            header: "ANTIGRAVITY • \(stepPrefix)EXECUTING",
-                            detail: formatEventName(type),
+                            header: "ANTIGRAVITY • \(stepPrefix)\(actionTitle)",
+                            detail: toolSummary,
                             activePath: nil,
                             isAnimated: true
                         )
@@ -176,54 +179,148 @@ public class BrainWatcher {
         }
     }
 
+    private func isActionExecutionType(_ type: String) -> Bool {
+        let t = type.uppercased()
+        return t == "RUN_COMMAND" ||
+               t == "GREP_SEARCH" ||
+               t == "VIEW_FILE" ||
+               t == "REPLACE_FILE_CONTENT" ||
+               t == "MULTI_REPLACE_FILE_CONTENT" ||
+               t == "WRITE_TO_FILE" ||
+               t == "LIST_DIR" ||
+               t == "LIST_DIRECTORY" ||
+               t == "ASK_QUESTION" ||
+               t == "BROWSER_SUBAGENT" ||
+               t == "MANAGE_TASK" ||
+               t == "READ_URL_CONTENT" ||
+               t == "GENERATE_IMAGE" ||
+               t == "SCHEDULE" ||
+               t == "CODE_ACTION"
+    }
+
+    private func actionHeaderAndDetail(for type: String) -> (String, String) {
+        switch type.uppercased() {
+        case "GREP_SEARCH":
+            return ("SEARCHING CODE", "Searching codebase...")
+        case "MULTI_REPLACE_FILE_CONTENT", "REPLACE_FILE_CONTENT", "WRITE_TO_FILE", "CODE_ACTION":
+            return ("EDITING FILE", "Editing code...")
+        case "VIEW_FILE":
+            return ("READING FILE", "Reading file...")
+        case "RUN_COMMAND":
+            return ("RUNNING COMMAND", "Running command...")
+        case "LIST_DIR", "LIST_DIRECTORY":
+            return ("SCANNING DIR", "Scanning directory...")
+        case "ASK_QUESTION":
+            return ("ASKING QUESTION", "Waiting for input...")
+        case "BROWSER_SUBAGENT":
+            return ("BROWSER AGENT", "Automating browser...")
+        case "MANAGE_TASK":
+            return ("MANAGING TASK", "Managing task...")
+        case "READ_URL_CONTENT":
+            return ("FETCHING URL", "Fetching web content...")
+        case "GENERATE_IMAGE":
+            return ("GENERATING IMAGE", "Creating asset...")
+        case "SCHEDULE":
+            return ("SCHEDULING TIMER", "Timer scheduled...")
+        default:
+            return ("EXECUTING", formatEventName(type))
+        }
+    }
+
     private func parseToolDetails(toolName: String, args: [String: Any]) -> (String, String, String?) {
         var activePath: String? = nil
+        let toolAction = args["toolAction"] as? String ?? (args["tool_action"] as? String ?? "")
 
-        switch toolName {
-        case "replace_file_content", "multi_replace_file_content", "write_to_file":
+        switch toolName.lowercased() {
+        case "multi_replace_file_content", "replace_file_content", "write_to_file":
             let path = args["TargetFile"] as? String ?? (args["target_file"] as? String ?? "")
             activePath = path.isEmpty ? nil : path
             let filename = (path as NSString).lastPathComponent
-            let display = filename.isEmpty ? "Editing code..." : "Editing \(filename)"
+            let display = !toolAction.isEmpty ? toolAction : (filename.isEmpty ? "Editing code..." : "Editing \(filename)")
             return ("EDITING FILE", display, activePath)
 
         case "view_file":
             let path = args["AbsolutePath"] as? String ?? (args["path"] as? String ?? "")
             activePath = path.isEmpty ? nil : path
             let filename = (path as NSString).lastPathComponent
-            let display = filename.isEmpty ? "Reading file..." : "Reading \(filename)"
+            let display = !toolAction.isEmpty ? toolAction : (filename.isEmpty ? "Reading file..." : "Reading \(filename)")
             return ("READING FILE", display, activePath)
+
+        case "grep_search":
+            let query = args["Query"] as? String ?? (args["query"] as? String ?? "")
+            let display = !toolAction.isEmpty ? toolAction : (query.isEmpty ? "Searching codebase..." : "Searching '\(query)'")
+            return ("SEARCHING CODE", display, nil)
 
         case "run_command":
             let cmd = args["CommandLine"] as? String ?? (args["command"] as? String ?? "Running shell command")
             let truncated = cmd.count > 32 ? String(cmd.prefix(29)) + "..." : cmd
-            return ("RUNNING COMMAND", truncated, nil)
+            let display = !toolAction.isEmpty ? toolAction : truncated
+            return ("RUNNING COMMAND", display, nil)
 
-        case "list_dir":
-            let dir = args["DirectoryPath"] as? String ?? ""
+        case "list_dir", "list_directory":
+            let dir = args["DirectoryPath"] as? String ?? (args["directory_path"] as? String ?? "")
             let lastDir = (dir as NSString).lastPathComponent
-            return ("SCANNING DIR", lastDir.isEmpty ? "Scanning directory" : "Listing \(lastDir)", nil)
+            let display = !toolAction.isEmpty ? toolAction : (lastDir.isEmpty ? "Scanning directory..." : "Listing \(lastDir)")
+            return ("SCANNING DIR", display, nil)
 
-        case "grep_search":
-            let query = args["Query"] as? String ?? ""
-            return ("SEARCHING", query.isEmpty ? "Searching codebase" : "Searching '\(query)'", nil)
+        case "ask_question":
+            return ("ASKING QUESTION", !toolAction.isEmpty ? toolAction : "Waiting for input...", nil)
+
+        case "browser_subagent":
+            return ("BROWSER AGENT", !toolAction.isEmpty ? toolAction : "Automating browser...", nil)
+
+        case "manage_task":
+            return ("MANAGING TASK", !toolAction.isEmpty ? toolAction : "Managing background task...", nil)
+
+        case "read_url_content":
+            return ("FETCHING URL", !toolAction.isEmpty ? toolAction : "Fetching web content...", nil)
+
+        case "generate_image":
+            return ("GENERATING IMAGE", !toolAction.isEmpty ? toolAction : "Creating graphic asset...", nil)
+
+        case "schedule":
+            return ("SCHEDULING TIMER", !toolAction.isEmpty ? toolAction : "Setting timer schedule...", nil)
 
         default:
-            return ("EXECUTING ACTION", formatEventName(toolName), nil)
+            let display = !toolAction.isEmpty ? toolAction : formatEventName(toolName)
+            return ("EXECUTING ACTION", display, nil)
         }
     }
 
     private func formatEventName(_ raw: String) -> String {
-        switch raw {
-        case "UserInput": return "Thinking & planning..."
-        case "RUN_COMMAND", "run_command": return "Running command"
-        case "VIEW_FILE", "view_file": return "Reading file"
-        case "REPLACE_FILE_CONTENT", "replace_file_content", "WRITE_TO_FILE", "write_to_file": return "Editing code..."
-        case "LIST_DIR", "list_dir": return "Scanning directory"
-        case "tool_calls", "ToolCall": return "Executing action"
-        case "ResponseGenerated": return "Response completed"
-        case "WatcherStarted", "Standby": return "Antigravity Ready"
-        default: return raw
+        switch raw.uppercased() {
+        case "USER_INPUT", "USERINPUT":
+            return "Thinking & planning..."
+        case "RUN_COMMAND":
+            return "Running command"
+        case "VIEW_FILE":
+            return "Reading file"
+        case "REPLACE_FILE_CONTENT", "MULTI_REPLACE_FILE_CONTENT", "WRITE_TO_FILE", "CODE_ACTION":
+            return "Editing code"
+        case "GREP_SEARCH":
+            return "Searching codebase"
+        case "LIST_DIR", "LIST_DIRECTORY":
+            return "Scanning directory"
+        case "ASK_QUESTION":
+            return "Asking question"
+        case "BROWSER_SUBAGENT":
+            return "Browser automation"
+        case "MANAGE_TASK":
+            return "Managing task"
+        case "READ_URL_CONTENT":
+            return "Fetching web content"
+        case "GENERATE_IMAGE":
+            return "Generating image"
+        case "SCHEDULE":
+            return "Timer scheduled"
+        case "CHECKPOINT", "CONVERSATION_HISTORY", "KNOWLEDGE_ARTIFACTS", "SYSTEM_MESSAGE":
+            return "Processing context"
+        case "RESPONSEGENERATED":
+            return "Response completed"
+        case "WATCHERSTARTED", "STANDBY":
+            return "Antigravity Ready"
+        default:
+            return raw.replacingOccurrences(of: "_", with: " ").capitalized
         }
     }
 }
