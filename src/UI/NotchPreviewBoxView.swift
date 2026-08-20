@@ -30,6 +30,13 @@ public class NotchPreviewBoxView: NSView {
         }
     }
 
+    public var previewCompactHeight: CGFloat = 2.0 {
+        didSet {
+            needsDisplay = true
+            updateSublayers()
+        }
+    }
+
     private let notchShapeLayer = CAShapeLayer()
     private let glowShapeLayer = CAShapeLayer()
     private let beaconLayer = CALayer()
@@ -160,7 +167,7 @@ public class NotchPreviewBoxView: NSView {
         } else {
             let scale: CGFloat = 0.72
             targetW = min(boxW - 60, previewCompactWidth * scale)
-            targetH = notchHardwareH + 2.0
+            targetH = notchHardwareH + (previewCompactHeight * scale)
 
             headerTextLayer.isHidden = true
             detailTextLayer.isHidden = true

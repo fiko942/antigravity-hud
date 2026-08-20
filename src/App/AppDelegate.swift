@@ -56,8 +56,8 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         // Initial Compact Size flush on notch
-        currentW = 185.0
-        currentH = notchH + 2.0
+        currentW = SettingsManager.shared.compactWidth
+        currentH = notchH + SettingsManager.shared.compactHeight
 
         let xPos = screenMidX - (currentW / 2)
         let yPos = screenTop - currentH
@@ -85,6 +85,13 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
 
         panel.contentView = contentView
         panel.orderFrontRegardless()
+
+        SettingsManager.shared.onSettingsChanged = { [weak self] in
+            DispatchQueue.main.async {
+                self?.updateNotchDimensions()
+                self?.contentView.needsDisplay = true
+            }
+        }
 
         // Fast Global Mouse Hover Tracking
         NSEvent.addGlobalMonitorForEvents(matching: [.mouseMoved]) { [weak self] _ in
@@ -284,12 +291,16 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
         let expW = SettingsManager.shared.expandedWidth
         let expH = SettingsManager.shared.expandedHeight
         let compW = SettingsManager.shared.compactWidth
+        let compH = SettingsManager.shared.compactHeight
+
+        let curW = isHovered ? expW : compW
+        let curDropH = isHovered ? expH : compH
 
         let hoverHitBox = NSRect(
-            x: screenMidX - (isHovered ? (expW / 2) : (compW / 2)),
-            y: screenTop - (isHovered ? (notchH + expH + 4) : (notchH + 4)),
-            width: isHovered ? expW : compW,
-            height: isHovered ? (notchH + expH + 6) : (notchH + 6)
+            x: screenMidX - (curW / 2),
+            y: screenTop - (notchH + curDropH + 6),
+            width: curW,
+            height: notchH + curDropH + 8
         )
 
         let inside = hoverHitBox.contains(mouseLoc)
@@ -303,9 +314,10 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
         let expW = SettingsManager.shared.expandedWidth
         let expH = SettingsManager.shared.expandedHeight
         let compW = SettingsManager.shared.compactWidth
+        let compH = SettingsManager.shared.compactHeight
 
         var targetW: CGFloat = compW
-        var targetDropH: CGFloat = 2.0
+        var targetDropH: CGFloat = compH
         var shouldExpand = false
 
         if currentActivity.state == "idle" {
@@ -315,7 +327,7 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
                 shouldExpand = true
             } else {
                 targetW = compW
-                targetDropH = 2.0
+                targetDropH = compH
                 shouldExpand = false
             }
         } else {
@@ -332,7 +344,7 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
                     shouldExpand = true
                 } else {
                     targetW = compW
-                    targetDropH = 2.0
+                    targetDropH = compH
                     shouldExpand = false
                 }
             case .clickOnly:
@@ -342,7 +354,7 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
                     shouldExpand = true
                 } else {
                     targetW = compW
-                    targetDropH = 2.0
+                    targetDropH = compH
                     shouldExpand = false
                 }
             }

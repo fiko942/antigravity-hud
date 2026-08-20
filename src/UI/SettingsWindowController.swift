@@ -109,6 +109,10 @@ public class LiquidPillSegmentedControl: NSView {
     }
 }
 
+public class FlippedSettingsView: NSView {
+    public override var isFlipped: Bool { true }
+}
+
 // MARK: - Modern Glassmorphic Preferences & About Window Controller
 public class SettingsWindowController: NSWindowController, NSWindowDelegate {
     public static let shared = SettingsWindowController()
@@ -117,20 +121,26 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
     private var containerView: NSView!
 
     private var settingsScrollView: NSScrollView!
-    private var settingsContentView: NSView!
+    private var settingsContentView: FlippedSettingsView!
     private var aboutView: NSView!
 
     // Preview Component
     private var previewBox: NotchPreviewBoxView!
     private var previewToggle: NSSegmentedControl!
 
-    // Dimension Sliders & Labels
+    // Dimension Sliders & Labels (Expanded / Open / Hover)
     private var expWidthSlider: NSSlider!
     private var expWidthValueLabel: NSTextField!
     private var expHeightSlider: NSSlider!
     private var expHeightValueLabel: NSTextField!
+
+    // Dimension Sliders & Labels (Compact / Closed / Idle)
     private var compWidthSlider: NSSlider!
     private var compWidthValueLabel: NSTextField!
+    private var compHeightSlider: NSSlider!
+    private var compHeightValueLabel: NSTextField!
+
+    private var resetDimButton: NSButton!
 
     // Settings Controls
     private var activeModePopup: NSPopUpButton!
@@ -141,7 +151,7 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
     private var launchLoginCheck: NSButton!
 
     private init() {
-        let windowRect = NSRect(x: 0, y: 0, width: 560, height: 690)
+        let windowRect = NSRect(x: 0, y: 0, width: 560, height: 720)
         let window = NSWindow(
             contentRect: windowRect,
             styleMask: [.titled, .closable, .miniaturizable],
@@ -177,7 +187,7 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         // Top Liquid Pill Control
         pillSegmentedControl = LiquidPillSegmentedControl(
             items: ["⚙️ Settings", "ℹ️ About"],
-            frame: NSRect(x: (560 - 240) / 2, y: 640, width: 240, height: 32)
+            frame: NSRect(x: (560 - 240) / 2, y: 670, width: 240, height: 32)
         )
         pillSegmentedControl.onSelectionChanged = { [weak self] index in
             if let tab = SettingsTab(rawValue: index) {
@@ -187,7 +197,7 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         visualEffect.addSubview(pillSegmentedControl)
 
         // Main Container View
-        containerView = NSView(frame: NSRect(x: 0, y: 0, width: 560, height: 630))
+        containerView = NSView(frame: NSRect(x: 0, y: 0, width: 560, height: 660))
         visualEffect.addSubview(containerView)
 
         buildSettingsView()
@@ -196,10 +206,6 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         showTab(.settings)
     }
 
-public class FlippedSettingsView: NSView {
-    public override var isFlipped: Bool { true }
-}
-
     // MARK: - Build Settings Tab View
     private func buildSettingsView() {
         settingsScrollView = NSScrollView(frame: containerView.bounds)
@@ -207,7 +213,7 @@ public class FlippedSettingsView: NSView {
         settingsScrollView.drawsBackground = false
         settingsScrollView.autoresizingMask = [.width, .height]
 
-        let totalContentH: CGFloat = 660
+        let totalContentH: CGFloat = 720
         settingsContentView = FlippedSettingsView(frame: NSRect(x: 0, y: 0, width: 560, height: totalContentH))
         settingsScrollView.documentView = settingsContentView
 
@@ -215,13 +221,14 @@ public class FlippedSettingsView: NSView {
 
         // 1. Live Interactive Preview Section
         let previewHeader = makeSectionHeader(title: "Interactive Notch Live Preview", y: currentY)
+        previewHeader.frame = NSRect(x: 35, y: currentY, width: 200, height: 18)
         settingsContentView.addSubview(previewHeader)
 
         // State Toggle [ Open / Expanded ] vs [ Closed / Compact ]
         previewToggle = NSSegmentedControl(labels: ["📌 Open (Expanded)", "🔒 Closed (Compact)"], trackingMode: .selectOne, target: self, action: #selector(previewToggleChanged))
         previewToggle.selectedSegment = 0
         previewToggle.segmentStyle = .rounded
-        previewToggle.frame = NSRect(x: 230, y: currentY - 2, width: 295, height: 24)
+        previewToggle.frame = NSRect(x: 240, y: currentY - 2, width: 285, height: 24)
         settingsContentView.addSubview(previewToggle)
         currentY += 28
 
@@ -231,50 +238,82 @@ public class FlippedSettingsView: NSView {
 
         // 2. Custom Notch Dimensions Section
         let dimHeader = makeSectionHeader(title: "Custom Notch Dimensions (Width & Height)", y: currentY)
+        dimHeader.frame = NSRect(x: 35, y: currentY, width: 340, height: 18)
         settingsContentView.addSubview(dimHeader)
-        currentY += 26
+
+        // Reset to Defaults Button
+        resetDimButton = NSButton(title: "🔄 Reset Defaults", target: self, action: #selector(resetDimensionsClicked))
+        resetDimButton.bezelStyle = .inline
+        resetDimButton.font = NSFont.systemFont(ofSize: 11, weight: .semibold)
+        resetDimButton.frame = NSRect(x: 385, y: currentY - 2, width: 140, height: 22)
+        settingsContentView.addSubview(resetDimButton)
+        currentY += 24
+
+        // --- SUBSECTION A: Expanded Mode (Posisi Terbuka / Hover / Active) ---
+        let expSubHeader = makeSubSectionHeader(title: "Posisi Terbuka / Hover / Active (Expanded)", y: currentY)
+        settingsContentView.addSubview(expSubHeader)
+        currentY += 20
 
         // Expanded Width Slider
-        let expWLabel = makeLabel(text: "Expanded Width (Active):", y: currentY, isSub: false)
-        expWLabel.frame = NSRect(x: 35, y: currentY, width: 200, height: 18)
+        let expWLabel = makeLabel(text: "Expanded Width:", y: currentY, isSub: false)
+        expWLabel.frame = NSRect(x: 35, y: currentY, width: 180, height: 18)
         settingsContentView.addSubview(expWLabel)
 
         expWidthValueLabel = makeValueLabel(text: "380 pt", x: 450, y: currentY)
         settingsContentView.addSubview(expWidthValueLabel)
-        currentY += 20
+        currentY += 18
 
         expWidthSlider = NSSlider(value: 380, minValue: 280, maxValue: 560, target: self, action: #selector(expandedWidthChanged))
         expWidthSlider.frame = NSRect(x: 35, y: currentY, width: 490, height: 20)
         settingsContentView.addSubview(expWidthSlider)
-        currentY += 26
+        currentY += 24
 
         // Expanded Height Slider
         let expHLabel = makeLabel(text: "Expanded Drop Height:", y: currentY, isSub: false)
-        expHLabel.frame = NSRect(x: 35, y: currentY, width: 200, height: 18)
+        expHLabel.frame = NSRect(x: 35, y: currentY, width: 180, height: 18)
         settingsContentView.addSubview(expHLabel)
 
         expHeightValueLabel = makeValueLabel(text: "46 pt", x: 450, y: currentY)
         settingsContentView.addSubview(expHeightValueLabel)
-        currentY += 20
+        currentY += 18
 
         expHeightSlider = NSSlider(value: 46, minValue: 32, maxValue: 80, target: self, action: #selector(expandedHeightChanged))
         expHeightSlider.frame = NSRect(x: 35, y: currentY, width: 490, height: 20)
         settingsContentView.addSubview(expHeightSlider)
-        currentY += 26
+        currentY += 28
+
+        // --- SUBSECTION B: Compact Mode (Posisi Tertutup / Idle) ---
+        let compSubHeader = makeSubSectionHeader(title: "Posisi Tertutup / Idle (Compact)", y: currentY)
+        settingsContentView.addSubview(compSubHeader)
+        currentY += 20
 
         // Compact Width Slider
         let compWLabel = makeLabel(text: "Compact Idle Width:", y: currentY, isSub: false)
-        compWLabel.frame = NSRect(x: 35, y: currentY, width: 200, height: 18)
+        compWLabel.frame = NSRect(x: 35, y: currentY, width: 180, height: 18)
         settingsContentView.addSubview(compWLabel)
 
         compWidthValueLabel = makeValueLabel(text: "185 pt", x: 450, y: currentY)
         settingsContentView.addSubview(compWidthValueLabel)
-        currentY += 20
+        currentY += 18
 
         compWidthSlider = NSSlider(value: 185, minValue: 140, maxValue: 260, target: self, action: #selector(compactWidthChanged))
         compWidthSlider.frame = NSRect(x: 35, y: currentY, width: 490, height: 20)
         settingsContentView.addSubview(compWidthSlider)
-        currentY += 34
+        currentY += 24
+
+        // Compact Height Slider
+        let compHLabel = makeLabel(text: "Compact Drop Height:", y: currentY, isSub: false)
+        compHLabel.frame = NSRect(x: 35, y: currentY, width: 180, height: 18)
+        settingsContentView.addSubview(compHLabel)
+
+        compHeightValueLabel = makeValueLabel(text: "2 pt", x: 450, y: currentY)
+        settingsContentView.addSubview(compHeightValueLabel)
+        currentY += 18
+
+        compHeightSlider = NSSlider(value: 2, minValue: 0, maxValue: 20, target: self, action: #selector(compactHeightChanged))
+        compHeightSlider.frame = NSRect(x: 35, y: currentY, width: 490, height: 20)
+        settingsContentView.addSubview(compHeightSlider)
+        currentY += 32
 
         // 3. Behavior & Theme Section
         let activeHeader = makeSectionHeader(title: "Behavior & Theme", y: currentY)
@@ -409,6 +448,7 @@ public class FlippedSettingsView: NSView {
         aboutView.addSubview(donateBtn)
         curY += 48
 
+        // Saweria QR Code Card
         let possiblePaths = [
             Bundle.main.path(forResource: "saweria-qr", ofType: "png"),
             "/Applications/AntigravityHUD.app/Contents/Resources/saweria-qr.png",
@@ -445,8 +485,10 @@ public class FlippedSettingsView: NSView {
         refreshControls()
         showTab(tab)
         pillSegmentedControl.setSelectedIndex(tab.rawValue, animated: false)
-        NSApp.activate(ignoringOtherApps: true)
+        self.window?.center()
         self.window?.makeKeyAndOrderFront(nil)
+        self.window?.orderFrontRegardless()
+        NSApp.activate(ignoringOtherApps: true)
     }
 
     private func showTab(_ tab: SettingsTab) {
@@ -476,20 +518,25 @@ public class FlippedSettingsView: NSView {
         hapticCheck.state = s.hapticsEnabled ? .on : .off
         launchLoginCheck.state = s.launchAtLogin ? .on : .off
 
-        // Dimensions
+        // Expanded Dimensions
         expWidthSlider.doubleValue = Double(s.expandedWidth)
         expWidthValueLabel.stringValue = "\(Int(s.expandedWidth)) pt"
 
         expHeightSlider.doubleValue = Double(s.expandedHeight)
         expHeightValueLabel.stringValue = "\(Int(s.expandedHeight)) pt"
 
+        // Compact Dimensions
         compWidthSlider.doubleValue = Double(s.compactWidth)
         compWidthValueLabel.stringValue = "\(Int(s.compactWidth)) pt"
+
+        compHeightSlider.doubleValue = Double(s.compactHeight)
+        compHeightValueLabel.stringValue = "\(Int(s.compactHeight)) pt"
 
         // Update preview canvas
         previewBox.previewExpandedWidth = s.expandedWidth
         previewBox.previewExpandedHeight = s.expandedHeight
         previewBox.previewCompactWidth = s.compactWidth
+        previewBox.previewCompactHeight = s.compactHeight
         previewBox.updatePreview()
 
         let currentThemeId = ThemeManager.shared.activeThemeId
@@ -524,6 +571,21 @@ public class FlippedSettingsView: NSView {
 
         SettingsManager.shared.compactWidth = val
         SettingsManager.shared.saveSettings()
+    }
+
+    @objc private func compactHeightChanged() {
+        let val = CGFloat(compHeightSlider.doubleValue)
+        compHeightValueLabel.stringValue = "\(Int(val)) pt"
+        previewBox.previewCompactHeight = val
+
+        SettingsManager.shared.compactHeight = val
+        SettingsManager.shared.saveSettings()
+    }
+
+    @objc private func resetDimensionsClicked() {
+        SettingsManager.shared.resetDimensionsToDefaults()
+        SensoryManager.shared.triggerHaptic(pattern: .generic)
+        refreshControls()
     }
 
     @objc private func previewToggleChanged() {
@@ -594,6 +656,14 @@ public class FlippedSettingsView: NSView {
         label.font = NSFont.systemFont(ofSize: 13, weight: .bold)
         label.textColor = .labelColor
         label.frame = NSRect(x: 35, y: y, width: 490, height: 18)
+        return label
+    }
+
+    private func makeSubSectionHeader(title: String, y: CGFloat) -> NSTextField {
+        let label = NSTextField(labelWithString: title)
+        label.font = NSFont.systemFont(ofSize: 11.5, weight: .semibold)
+        label.textColor = NSColor(red: 0.0, green: 0.65, blue: 1.0, alpha: 1.0)
+        label.frame = NSRect(x: 35, y: y, width: 490, height: 16)
         return label
     }
 
