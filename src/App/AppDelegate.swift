@@ -29,8 +29,10 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
     public func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
 
-        // Ensure auto-start at login is registered
-        LaunchAgentManager.ensureInstalled()
+        // Ensure auto-start at login is registered if enabled
+        if SettingsManager.shared.launchAtLogin {
+            LaunchAgentManager.ensureInstalled()
+        }
 
         guard let screen = NSScreen.main else { return }
         screenTop = screen.frame.maxY
@@ -96,6 +98,11 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
             self?.handleActivityChange(activity)
         }
 
+        // Connect Settings Manager
+        SettingsManager.shared.onSettingsChanged = { [weak self] in
+            self?.updateNotchDimensions()
+        }
+
         // Brain State Polling (every 100ms)
         pollTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
             self?.brainWatcher.poll()
@@ -107,10 +114,16 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
 
         if previousState != activity.state {
             if activity.state == "done" {
-                SensoryManager.shared.playCompletionChime()
-                SensoryManager.shared.triggerHaptic(pattern: .alignment)
+                if SettingsManager.shared.soundEnabled {
+                    SensoryManager.shared.playCompletionChime()
+                }
+                if SettingsManager.shared.hapticsEnabled {
+                    SensoryManager.shared.triggerHaptic(pattern: .alignment)
+                }
             } else if activity.state == "working" || activity.state == "thinking" {
-                SensoryManager.shared.triggerHaptic(pattern: .generic)
+                if SettingsManager.shared.hapticsEnabled {
+                    SensoryManager.shared.triggerHaptic(pattern: .generic)
+                }
             } else if activity.state == "idle" {
                 isClickExpanded = false
             }
@@ -124,7 +137,18 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
     private func showActionMenu(positionedNear view: NSView?, event: NSEvent?) {
         let menu = NSMenu(title: "Antigravity HUD")
 
-        // 1. Theme Submenu (General, Cyberpunk, Matrix, Sunset, Dracula)
+        // 1. Settings / Preferences & About Windows
+        let prefsItem = NSMenuItem(title: "⚙️ Preferences...", action: #selector(openPreferencesMenu), keyEquivalent: ",")
+        prefsItem.target = self
+        menu.addItem(prefsItem)
+
+        let aboutItem = NSMenuItem(title: "ℹ️ About Antigravity HUD", action: #selector(openAboutMenu), keyEquivalent: "")
+        aboutItem.target = self
+        menu.addItem(aboutItem)
+
+        menu.addItem(NSMenuItem.separator())
+
+        // 2. Theme Submenu (General, Cyberpunk, Matrix, Sunset, Dracula)
         let themeMenu = NSMenu(title: "Themes")
         for theme in ThemeManager.shared.availableThemes {
             let item = NSMenuItem(title: theme.displayName, action: #selector(selectThemeMenuItem(_:)), keyEquivalent: "")
@@ -136,25 +160,6 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
         let themeItem = NSMenuItem(title: "🎨 Theme & Shape Style", action: nil, keyEquivalent: "")
         themeItem.submenu = themeMenu
         menu.addItem(themeItem)
-
-        menu.addItem(NSMenuItem.separator())
-
-        // 2. Sound & Haptics Toggles
-        let soundItem = NSMenuItem(
-            title: "🔊 Completion Chime: \(ThemeManager.shared.soundEnabled ? "Enabled" : "Disabled")",
-            action: #selector(toggleSoundMenu),
-            keyEquivalent: ""
-        )
-        soundItem.target = self
-        menu.addItem(soundItem)
-
-        let hapticItem = NSMenuItem(
-            title: "📳 Trackpad Haptics: \(ThemeManager.shared.hapticsEnabled ? "Enabled" : "Disabled")",
-            action: #selector(toggleHapticsMenu),
-            keyEquivalent: ""
-        )
-        hapticItem.target = self
-        menu.addItem(hapticItem)
 
         // 3. Dynamic Contextual Actions (Open File & Abort Task)
         var hasContextAction = false
@@ -203,20 +208,18 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    @objc private func openPreferencesMenu() {
+        SettingsWindowController.shared.showWindow(tab: .settings)
+    }
+
+    @objc private func openAboutMenu() {
+        SettingsWindowController.shared.showWindow(tab: .about)
+    }
+
     @objc private func selectThemeMenuItem(_ sender: NSMenuItem) {
         if let themeId = sender.representedObject as? String {
             ThemeManager.shared.setTheme(withId: themeId)
         }
-    }
-
-    @objc private func toggleSoundMenu() {
-        ThemeManager.shared.toggleSound()
-        SensoryManager.shared.triggerHaptic(pattern: .generic)
-    }
-
-    @objc private func toggleHapticsMenu() {
-        ThemeManager.shared.toggleHaptics()
-        SensoryManager.shared.triggerHaptic(pattern: .generic)
     }
 
     @objc private func openActiveFileMenu() {
@@ -259,7 +262,9 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
         if currentActivity.state != "idle" {
             // When AI is ACTIVE: Click toggles open/close
             isClickExpanded.toggle()
-            SensoryManager.shared.triggerHaptic(pattern: .generic)
+            if SettingsManager.shared.hapticsEnabled {
+                SensoryManager.shared.triggerHaptic(pattern: .generic)
+            }
             updateNotchDimensions()
         }
     }
@@ -287,7 +292,7 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
         var shouldExpand = false
 
         if currentActivity.state == "idle" {
-            if isHovered {
+            if SettingsManager.shared.idleHoverExpands && isHovered {
                 targetW = 380.0
                 targetDropH = 46.0
                 shouldExpand = true
@@ -297,14 +302,32 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
                 shouldExpand = false
             }
         } else {
-            if isClickExpanded {
+            // Active task running (Thinking / Working / Done)
+            switch SettingsManager.shared.activeTaskDisplayMode {
+            case .alwaysExpanded:
                 targetW = 380.0
                 targetDropH = 46.0
                 shouldExpand = true
-            } else {
-                targetW = 185.0
-                targetDropH = 2.0
-                shouldExpand = false
+            case .hoverExpands:
+                if isHovered || isClickExpanded {
+                    targetW = 380.0
+                    targetDropH = 46.0
+                    shouldExpand = true
+                } else {
+                    targetW = 185.0
+                    targetDropH = 2.0
+                    shouldExpand = false
+                }
+            case .clickOnly:
+                if isClickExpanded {
+                    targetW = 380.0
+                    targetDropH = 46.0
+                    shouldExpand = true
+                } else {
+                    targetW = 185.0
+                    targetDropH = 2.0
+                    shouldExpand = false
+                }
             }
         }
 
