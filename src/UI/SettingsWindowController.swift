@@ -176,19 +176,34 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         descLabel.frame = NSRect(x: 50, y: 135, width: 420, height: 55)
         aboutView.addSubview(descLabel)
 
-        // Author credits
-        let authorLabel = NSTextField(labelWithString: "Created & engineered by Wiji Fiko Teren (@fiko942)")
-        authorLabel.font = NSFont.systemFont(ofSize: 11.5, weight: .semibold)
-        authorLabel.alignment = .center
-        authorLabel.frame = NSRect(x: 0, y: 95, width: 520, height: 18)
-        aboutView.addSubview(authorLabel)
+        // Author credits & Portfolio Link
+        let authorButton = NSButton(
+            title: "Created & engineered by Wiji Fiko Teren (@fiko942)",
+            target: self,
+            action: #selector(openPortfolio)
+        )
+        authorButton.isBordered = false
+        authorButton.font = NSFont.systemFont(ofSize: 12, weight: .semibold)
+        authorButton.contentTintColor = NSColor(red: 0.0, green: 0.88, blue: 0.45, alpha: 1.0)
+        authorButton.frame = NSRect(x: 0, y: 95, width: 520, height: 20)
+        aboutView.addSubview(authorButton)
 
-        // GitHub Button
-        let githubButton = NSButton(title: "View on GitHub ↗", target: self, action: #selector(openGitHub))
-        githubButton.bezelStyle = .rounded
-        githubButton.font = NSFont.systemFont(ofSize: 12, weight: .medium)
-        githubButton.frame = NSRect(x: (520 - 180) / 2, y: 45, width: 180, height: 32)
-        aboutView.addSubview(githubButton)
+        // Action Buttons: Portfolio & GitHub
+        let btnW: CGFloat = 175
+        let spacing: CGFloat = 14
+        let startX = (520 - (btnW * 2 + spacing)) / 2
+
+        let portfolioBtn = NSButton(title: "🌐 Creator Portfolio ↗", target: self, action: #selector(openPortfolio))
+        portfolioBtn.bezelStyle = .rounded
+        portfolioBtn.font = NSFont.systemFont(ofSize: 11.5, weight: .medium)
+        portfolioBtn.frame = NSRect(x: startX, y: 45, width: btnW, height: 32)
+        aboutView.addSubview(portfolioBtn)
+
+        let githubBtn = NSButton(title: "🐙 GitHub Repository ↗", target: self, action: #selector(openGitHub))
+        githubBtn.bezelStyle = .rounded
+        githubBtn.font = NSFont.systemFont(ofSize: 11.5, weight: .medium)
+        githubBtn.frame = NSRect(x: startX + btnW + spacing, y: 45, width: btnW, height: 32)
+        aboutView.addSubview(githubBtn)
     }
 
     // MARK: - Actions & Sync
@@ -275,6 +290,12 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
     @objc private func launchLoginChanged() {
         SettingsManager.shared.launchAtLogin = (launchLoginCheck.state == .on)
         SettingsManager.shared.saveSettings()
+    }
+
+    @objc private func openPortfolio() {
+        if let url = URL(string: "https://wijifikoteren.streampeg.com") {
+            NSWorkspace.shared.open(url)
+        }
     }
 
     @objc private func openGitHub() {

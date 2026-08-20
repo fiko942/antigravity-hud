@@ -12,7 +12,7 @@
   <a href="https://github.com/fiko942/antigravity-hud/releases"><img src="https://img.shields.io/badge/Release-v1.0.0-00E0FF?style=flat-square&logo=apple" alt="Release" /></a>
   <a href="https://developer.apple.com/swift/"><img src="https://img.shields.io/badge/Language-Swift%206-FA7343?style=flat-square&logo=swift" alt="Swift" /></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-34D399?style=flat-square" alt="License" /></a>
-  <a href="https://github.com/fiko942"><img src="https://img.shields.io/badge/Author-Wiji%20Fiko%20Teren-A855F7?style=flat-square&logo=github" alt="Author" /></a>
+  <a href="https://wijifikoteren.streampeg.com"><img src="https://img.shields.io/badge/Author-Wiji%20Fiko%20Teren-A855F7?style=flat-square&logo=safari" alt="Author Portfolio" /></a>
 </p>
 
 ---
@@ -144,7 +144,9 @@ antigravity-hud/
 
 ## 👤 Author & Credits
 
-Created and engineered with ❤️ by **[Wiji Fiko Teren](https://github.com/fiko942)** (`@fiko942`).
+Created and engineered with ❤️ by **[Wiji Fiko Teren](https://wijifikoteren.streampeg.com)** ([@fiko942](https://github.com/fiko942)).
+- 🌐 **Portfolio**: [https://wijifikoteren.streampeg.com](https://wijifikoteren.streampeg.com)
+- 🐙 **GitHub**: [@fiko942](https://github.com/fiko942)
 
 ---
 
