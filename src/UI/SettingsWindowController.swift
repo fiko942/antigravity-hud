@@ -308,7 +308,7 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
     }
 
     @objc private func openSaweria() {
-        if let url = URL(string: "https://saweria.co/fiko942") {
+        if let url = URL(string: "https://saweria.co/wijifikoteren") {
             NSWorkspace.shared.open(url)
         }
     }
