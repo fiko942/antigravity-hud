@@ -34,6 +34,7 @@ public class ThemeManager {
             displayName: "Matrix Terminal",
             shapeType: .matrixBracket,
             hasGlitchEffect: false,
+            hasMatrixRain: true,
             palette: ThemePalette(
                 idle: NSColor(red: 0.0, green: 1.0, blue: 0.25, alpha: 1.0),       // #00FF41 Matrix Green
                 thinking: NSColor(red: 0.0, green: 0.56, blue: 0.07, alpha: 1.0),   // #008F11 Deep Terminal

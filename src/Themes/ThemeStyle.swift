@@ -28,13 +28,15 @@ public struct ThemeDefinition {
     public var displayName: String
     public var shapeType: ThemeShapeType
     public var hasGlitchEffect: Bool
+    public var hasMatrixRain: Bool
     public var palette: ThemePalette
 
-    public init(id: String, displayName: String, shapeType: ThemeShapeType, hasGlitchEffect: Bool, palette: ThemePalette) {
+    public init(id: String, displayName: String, shapeType: ThemeShapeType, hasGlitchEffect: Bool, hasMatrixRain: Bool = false, palette: ThemePalette) {
         self.id = id
         self.displayName = displayName
         self.shapeType = shapeType
         self.hasGlitchEffect = hasGlitchEffect
+        self.hasMatrixRain = hasMatrixRain
         self.palette = palette
     }
 }

@@ -16,6 +16,7 @@ public class NotchIslandContentView: NSView {
     // Right Animated Equalizer, Glitch Layer & Vertical 3-Dots Action Button
     private let equalizer = CyberEqualizerLayer()
     private let glitchOverlay = GlitchOverlayLayer()
+    private let matrixRain = MatrixRainLayer()
     private let moreButton = NSButton(title: "⋮", target: nil, action: nil)
 
     public var onViewClicked: (() -> Void)?
@@ -36,6 +37,13 @@ public class NotchIslandContentView: NSView {
 
     public let notchH: CGFloat = 32.0 // Physical hardware notch height
 
+    // Matrix Terminal Decryption & Cursor Engine
+    private var scrambleTimer: Timer? = nil
+    private var cursorTimer: Timer? = nil
+    private var cursorVisible: Bool = true
+    private var currentDisplayTargetText: String = ""
+    private let matrixChars = Array("0123456789ABCDEF!@#$%^&*<>[]/*{}")
+
     public override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
         setupUI()
@@ -49,8 +57,10 @@ public class NotchIslandContentView: NSView {
     private func setupUI() {
         wantsLayer = true
 
-        // Glitch Overlay Layer (for Cyberpunk theme)
+        // Background Layers: Matrix Rain & Glitch Overlays
+        layer?.addSublayer(matrixRain)
         layer?.addSublayer(glitchOverlay)
+
         glitchOverlay.onGlitchColorTick = { [weak self] color in
             guard let self = self, ThemeManager.shared.currentTheme.hasGlitchEffect else { return }
             self.glitchAccentColor = color
@@ -163,19 +173,19 @@ public class NotchIslandContentView: NSView {
                 glowPath.line(to: NSPoint(x: w, y: h - chamfer))
                 glowPath.line(to: NSPoint(x: w, y: max(0, h - chamfer - 8)))
             } else {
-                glowPath.move(to: NSPoint(x: chamfer, y: h - 1.5))
-                glowPath.line(to: NSPoint(x: w - chamfer, y: h - 1.5))
+                glowPath.move(to: NSPoint(x: 10, y: h - 1.5))
+                glowPath.line(to: NSPoint(x: w - 10, y: h - 1.5))
             }
 
         case .matrixBracket:
-            // Matrix Terminal: Sharp 4pt box with corner bracket crosshairs [ ]
+            // Matrix Terminal: Clean tech terminal box with corner bracket crosshairs `[ ]`
             let cornerRadius: CGFloat = isExpandedMode ? 4.0 : 2.0
             path.move(to: NSPoint(x: 0, y: 0))
             path.line(to: NSPoint(x: w, y: 0))
             path.line(to: NSPoint(x: w, y: h - cornerRadius))
-            path.appendArc(withCenter: NSPoint(x: w - cornerRadius, y: h - cornerRadius), radius: cornerRadius, startAngle: 0, endAngle: 90, clockwise: false)
+            path.line(to: NSPoint(x: w - cornerRadius, y: h))
             path.line(to: NSPoint(x: cornerRadius, y: h))
-            path.appendArc(withCenter: NSPoint(x: cornerRadius, y: h - cornerRadius), radius: cornerRadius, startAngle: 90, endAngle: 180, clockwise: false)
+            path.line(to: NSPoint(x: 0, y: h - cornerRadius))
             path.close()
 
             if isExpandedMode {
@@ -231,19 +241,19 @@ public class NotchIslandContentView: NSView {
             path.close()
 
             if isExpandedMode {
-                glowPath.move(to: NSPoint(x: 0, y: max(0, h - bevel - 8)))
+                glowPath.move(to: NSPoint(x: 0, y: max(0, h - bevel - 6)))
                 glowPath.line(to: NSPoint(x: 0, y: h - bevel))
                 glowPath.line(to: NSPoint(x: bevel, y: h))
                 glowPath.line(to: NSPoint(x: w - bevel, y: h))
                 glowPath.line(to: NSPoint(x: w, y: h - bevel))
-                glowPath.line(to: NSPoint(x: w, y: max(0, h - bevel - 8)))
+                glowPath.line(to: NSPoint(x: w, y: max(0, h - bevel - 6)))
             } else {
-                glowPath.move(to: NSPoint(x: bevel, y: h - 1.5))
-                glowPath.line(to: NSPoint(x: w - bevel, y: h - 1.5))
+                glowPath.move(to: NSPoint(x: 10, y: h - 1.5))
+                glowPath.line(to: NSPoint(x: w - 10, y: h - 1.5))
             }
 
         case .rounded:
-            // General / Classic: Standard smooth rounded corners (R = 18pt)
+            // General Classic: Smooth Apple Superellipse
             let cornerRadius: CGFloat = isExpandedMode ? 18.0 : 8.0
             path.move(to: NSPoint(x: 0, y: 0))
             path.line(to: NSPoint(x: w, y: 0))
@@ -287,6 +297,7 @@ public class NotchIslandContentView: NSView {
         let h = bounds.height
 
         glitchOverlay.frame = bounds
+        matrixRain.updateLayout(width: w, height: h)
 
         if !isExpandedMode {
             // Idle Compact
@@ -344,14 +355,16 @@ public class NotchIslandContentView: NSView {
     }
 
     public func updateActivity(_ activity: AgentActivity) {
+        let textChanged = (currentActivity.detail != activity.detail)
         currentActivity = activity
-        applyTheme()
+        applyTheme(textChanged: textChanged)
     }
 
-    public func applyTheme() {
+    public func applyTheme(textChanged: Bool = false) {
         let color = ThemeManager.shared.color(for: currentActivity.state)
         themeColor = color
         let currentTheme = ThemeManager.shared.currentTheme
+        let isMatrix = currentTheme.id == "matrix"
 
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -362,9 +375,32 @@ public class NotchIslandContentView: NSView {
             self.beaconLayer.shadowColor = color.cgColor
             self.beaconPulseLayer.backgroundColor = color.withAlphaComponent(0.25).cgColor
 
-            self.headerLabel.stringValue = self.currentActivity.header
+            // Typography & Headers
+            if isMatrix {
+                self.headerLabel.font = NSFont.monospacedSystemFont(ofSize: 9.0, weight: .black)
+                self.detailLabel.font = NSFont.monospacedSystemFont(ofSize: 11.0, weight: .bold)
+                self.detailLabel.textColor = NSColor(red: 0.8, green: 1.0, blue: 0.85, alpha: 1.0)
+
+                let stateTag = self.currentActivity.state.uppercased()
+                self.headerLabel.stringValue = "> SYS://AGY.KERNEL [\(stateTag)]"
+            } else {
+                self.headerLabel.font = NSFont.monospacedSystemFont(ofSize: 9.0, weight: .black)
+                self.detailLabel.font = NSFont.systemFont(ofSize: 11.5, weight: .semibold)
+                self.detailLabel.textColor = .white
+                self.headerLabel.stringValue = self.currentActivity.header
+            }
+
             self.headerLabel.textColor = color
-            self.detailLabel.stringValue = self.currentActivity.detail
+
+            // Text Decrypt / Scramble Animation for Matrix Theme
+            if isMatrix {
+                if textChanged || self.currentDisplayTargetText != self.currentActivity.detail {
+                    self.scrambleAnimateText(to: self.currentActivity.detail)
+                }
+            } else {
+                self.stopMatrixTextAnimations()
+                self.detailLabel.stringValue = self.currentActivity.detail
+            }
 
             self.moreButton.layer?.backgroundColor = color.withAlphaComponent(0.12).cgColor
             self.moreButton.layer?.borderColor = color.withAlphaComponent(0.35).cgColor
@@ -385,9 +421,70 @@ public class NotchIslandContentView: NSView {
                 self.glitchAccentColor = nil
             }
 
+            // Trigger Matrix digital rain if enabled for current theme
+            let shouldRain = currentTheme.hasMatrixRain && (self.currentActivity.state == "working" || self.currentActivity.state == "thinking")
+            self.matrixRain.setStreaming(shouldRain)
+
             self.needsLayout = true
             self.needsDisplay = true
             CATransaction.commit()
         }
+    }
+
+    // MARK: - Matrix Text Decryption & Blinking Block Cursor
+    private func scrambleAnimateText(to target: String) {
+        scrambleTimer?.invalidate()
+        cursorTimer?.invalidate()
+
+        currentDisplayTargetText = target
+        let targetChars = Array(target)
+        let totalSteps = 12
+        var currentStep = 0
+
+        scrambleTimer = Timer.scheduledTimer(withTimeInterval: 0.025, repeats: true) { [weak self] timer in
+            guard let self = self else { timer.invalidate(); return }
+            currentStep += 1
+
+            let progress = CGFloat(currentStep) / CGFloat(totalSteps)
+            let unlockedCount = Int(progress * CGFloat(targetChars.count))
+
+            var result = ""
+            for i in 0..<targetChars.count {
+                if i < unlockedCount {
+                    result.append(targetChars[i])
+                } else {
+                    let randChar = self.matrixChars.randomElement() ?? "*"
+                    result.append(randChar)
+                }
+            }
+
+            self.detailLabel.stringValue = "> " + result + " █"
+
+            if currentStep >= totalSteps {
+                timer.invalidate()
+                self.scrambleTimer = nil
+                self.startBlinkingCursor()
+            }
+        }
+    }
+
+    private func startBlinkingCursor() {
+        cursorTimer?.invalidate()
+        cursorVisible = true
+        self.detailLabel.stringValue = "> " + self.currentDisplayTargetText + " █"
+
+        cursorTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+            guard let self = self, ThemeManager.shared.currentTheme.id == "matrix" else { return }
+            self.cursorVisible.toggle()
+            let cursor = self.cursorVisible ? " █" : ""
+            self.detailLabel.stringValue = "> " + self.currentDisplayTargetText + cursor
+        }
+    }
+
+    private func stopMatrixTextAnimations() {
+        scrambleTimer?.invalidate()
+        scrambleTimer = nil
+        cursorTimer?.invalidate()
+        cursorTimer = nil
     }
 }
