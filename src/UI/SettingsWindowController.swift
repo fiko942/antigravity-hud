@@ -161,7 +161,8 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         aboutView.addSubview(titleLabel)
 
         // Version
-        let versionLabel = NSTextField(labelWithString: "Version 1.0.0 (Modular AppKit Build)")
+        let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.1.0"
+        let versionLabel = NSTextField(labelWithString: "Version \(appVersion) (Modular AppKit Build)")
         versionLabel.font = NSFont.monospacedSystemFont(ofSize: 11, weight: .medium)
         versionLabel.textColor = NSColor(red: 0.0, green: 0.88, blue: 0.45, alpha: 1.0)
         versionLabel.alignment = .center

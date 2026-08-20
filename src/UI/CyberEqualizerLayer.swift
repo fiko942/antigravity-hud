@@ -1,12 +1,15 @@
 import Cocoa
 import QuartzCore
 
-// MARK: - Animated Cyber Waveform / Equalizer Component
+// MARK: - Animated Cyber Waveform / Equalizer Component (Flicker-Free State Guarded)
 public class CyberEqualizerLayer: CALayer {
     private var bars: [CALayer] = []
     private let barCount = 4
     private let barWidth: CGFloat = 2.5
     private let barSpacing: CGFloat = 2.5
+
+    private var isCurrentlyAnimating: Bool = false
+    private var currentColor: CGColor? = nil
 
     public override init() {
         super.init()
@@ -46,8 +49,21 @@ public class CyberEqualizerLayer: CALayer {
     }
 
     public func setAnimating(_ animating: Bool, color: CGColor) {
+        // Update color seamlessly if changed
+        if currentColor != color {
+            currentColor = color
+            for bar in bars {
+                bar.backgroundColor = color
+            }
+        }
+
+        // Prevent restarting existing active animations (prevents flickering/stuttering)
+        if isCurrentlyAnimating == animating {
+            return
+        }
+        isCurrentlyAnimating = animating
+
         for (i, bar) in bars.enumerated() {
-            bar.backgroundColor = color
             bar.removeAnimation(forKey: "equalize")
 
             if animating {

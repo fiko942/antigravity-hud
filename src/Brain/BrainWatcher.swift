@@ -50,6 +50,14 @@ public class BrainWatcher {
     }
 
     private func updateActivity(state: String, header: String, detail: String, activePath: String?, isAnimated: Bool) {
+        if currentActivity.state == state &&
+           currentActivity.header == header &&
+           currentActivity.detail == detail &&
+           currentActivity.activePath == activePath &&
+           currentActivity.isAnimated == isAnimated {
+            return
+        }
+
         currentActivity = AgentActivity(
             state: state,
             header: header,

@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR="${SCRIPT_DIR}/build"
 APP_NAME="AntigravityHUD.app"
 APP_DIR="${BUILD_DIR}/${APP_NAME}"
-DMG_NAME="AntigravityHUD-v1.0.0.dmg"
+DMG_NAME="AntigravityHUD-v1.1.0.dmg"
 DMG_PATH="${BUILD_DIR}/${DMG_NAME}"
 DMG_STAGING="${BUILD_DIR}/dmg_staging"
 
