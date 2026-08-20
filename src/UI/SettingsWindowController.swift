@@ -177,7 +177,7 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         aboutView.addSubview(descLabel)
 
         // Author credits
-        let authorLabel = NSTextField(labelWithString: "Created & engineered by Wiji Vegetarian (@fiko942)")
+        let authorLabel = NSTextField(labelWithString: "Created & engineered by Wiji Fiko Teren (@fiko942)")
         authorLabel.font = NSFont.systemFont(ofSize: 11.5, weight: .semibold)
         authorLabel.alignment = .center
         authorLabel.frame = NSRect(x: 0, y: 95, width: 520, height: 18)
