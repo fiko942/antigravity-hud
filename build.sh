@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BUILD_DIR="${SCRIPT_DIR}/build"
+APP_NAME="AntigravityHUD.app"
+APP_DIR="${BUILD_DIR}/${APP_NAME}"
+DMG_NAME="AntigravityHUD-v1.0.0.dmg"
+DMG_PATH="${BUILD_DIR}/${DMG_NAME}"
+DMG_STAGING="${BUILD_DIR}/dmg_staging"
+
+echo "==> Cleaning previous build artifacts..."
+rm -rf "${BUILD_DIR}"
+mkdir -p "${APP_DIR}/Contents/MacOS"
+mkdir -p "${APP_DIR}/Contents/Resources"
+mkdir -p "${DMG_STAGING}"
+
+echo "==> Compiling Swift native binary..."
+swiftc -O "${SCRIPT_DIR}/src/main.swift" \
+    -o "${APP_DIR}/Contents/MacOS/AntigravityHUD"
+
+echo "==> Copying App metadata and icon..."
+cp "${SCRIPT_DIR}/Resources/Info.plist" "${APP_DIR}/Contents/Info.plist"
+if [ -f "${SCRIPT_DIR}/Resources/AppIcon.icns" ]; then
+    cp "${SCRIPT_DIR}/Resources/AppIcon.icns" "${APP_DIR}/Contents/Resources/AppIcon.icns"
+fi
+
+echo "==> Preparing DMG staging..."
+cp -R "${APP_DIR}" "${DMG_STAGING}/"
+ln -s /Applications "${DMG_STAGING}/Applications"
+
+echo "==> Building production DMG installer (${DMG_NAME})..."
+hdiutil create -volname "Antigravity HUD" \
+    -srcfolder "${DMG_STAGING}" \
+    -ov -format UDZO \
+    "${DMG_PATH}"
+
+echo "==> Build complete!"
+echo "    App: ${APP_DIR}"
+echo "    DMG: ${DMG_PATH}"

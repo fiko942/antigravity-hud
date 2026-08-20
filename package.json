@@ -1,0 +1,30 @@
+{
+  "name": "antigravity-hud",
+  "version": "1.0.0",
+  "description": "Native macOS Dynamic Notch Island widget for Google Antigravity AI Agent",
+  "main": "src/main.swift",
+  "packageManager": "pnpm@11.8.0",
+  "scripts": {
+    "build": "bash build.sh",
+    "clean": "rm -rf build",
+    "start": "open build/AntigravityHUD.app"
+  },
+  "keywords": [
+    "antigravity",
+    "macos",
+    "dynamic-island",
+    "notch",
+    "appkit",
+    "swift"
+  ],
+  "author": "Muhammad Fiko S. (https://github.com/fikus942)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fikus942/antigravity-hud.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fikus942/antigravity-hud/issues"
+  },
+  "homepage": "https://github.com/fikus942/antigravity-hud#readme"
+}

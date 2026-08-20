@@ -1,0 +1,7 @@
+.DS_Store
+build/
+*.dmg
+dmg_staging/
+.system_generated/
+*.swp
+*.lock
