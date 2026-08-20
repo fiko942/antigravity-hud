@@ -29,14 +29,24 @@ public struct ThemeDefinition {
     public var shapeType: ThemeShapeType
     public var hasGlitchEffect: Bool
     public var hasMatrixRain: Bool
+    public var isLightMode: Bool
     public var palette: ThemePalette
 
-    public init(id: String, displayName: String, shapeType: ThemeShapeType, hasGlitchEffect: Bool, hasMatrixRain: Bool = false, palette: ThemePalette) {
+    public init(
+        id: String,
+        displayName: String,
+        shapeType: ThemeShapeType,
+        hasGlitchEffect: Bool = false,
+        hasMatrixRain: Bool = false,
+        isLightMode: Bool = false,
+        palette: ThemePalette
+    ) {
         self.id = id
         self.displayName = displayName
         self.shapeType = shapeType
         self.hasGlitchEffect = hasGlitchEffect
         self.hasMatrixRain = hasMatrixRain
+        self.isLightMode = isLightMode
         self.palette = palette
     }
 }

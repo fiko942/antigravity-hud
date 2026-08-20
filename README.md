@@ -21,12 +21,22 @@
 ## 📸 Live Visual Showcase
 
 <p align="center">
+  <b>☀️ macOS Classic (Light Mode - Crisp Platinum Ceramic Island)</b><br>
+  <img src="./docs/assets/notch-macos-light.png" alt="macOS Classic Light Notch" width="700" />
+</p>
+
+<p align="center">
+  <b>🌙 macOS Classic (Dark Mode - Apple Superellipse Glass Island)</b><br>
+  <img src="./docs/assets/notch-macos-dark.png" alt="macOS Classic Dark Notch" width="700" />
+</p>
+
+<p align="center">
   <b>⚡ Cyberpunk 2077 (Active Working State with Dynamic Glitch & Neural Waveform)</b><br>
   <img src="./docs/assets/notch-cyberpunk-working.png" alt="Cyberpunk Working Notch" width="700" />
 </p>
 
 <p align="center">
-  <b>💻 Matrix Terminal (Active Thinking State with Bracket Crosshairs)</b><br>
+  <b>💻 Matrix Terminal (Digital Rain Stream & Blinking Cursor █)</b><br>
   <img src="./docs/assets/notch-matrix-thinking.png" alt="Matrix Thinking Notch" width="700" />
 </p>
 
@@ -51,16 +61,17 @@
 ## ✨ Key Features & Highlights
 
 - 🏝️ **Native Hardware Notch Integration**: Aligns perfectly with Liquid Retina XDR hardware camera notch geometry (`Y = 924...956`) across Apple Silicon MacBooks (M1 / M2 / M3 / M4).
-- ⬛ **100% Solid OLED Pure Black (`drawRect`)**: Zero alpha bleeding or menu bar bleed-through. 100% opaque WindowServer backing store.
+- ⬛ **100% Solid OLED Pure Black (`drawRect`) & Light Mode Ceramic**: Zero alpha bleeding or menu bar bleed-through. 100% opaque WindowServer backing store with adaptive Light/Dark mode support.
 - 📐 **Dynamic Notch Shape-Morphing**:
-  - **`General (Classic)`**: Apple-style smooth superellipse ($R = 18\text{pt}$).
+  - **`macOS Classic (Dark)`**: Pure deep obsidian black with Apple smooth superellipse ($R = 18\text{pt}$).
+  - **`macOS Classic (Light)`**: Crisp platinum ceramic floating drop-down with dark typography for daytime productivity.
   - **`Cyberpunk 2077`**: Angular $45^\circ$ sci-fi mecha chamfers + active RGB chromatic scanline glitch.
-  - **`Matrix Terminal`**: Digital squared terminal corners with `[ ]` bracket crosshairs.
-  - **`Sunset Synthwave`**: Ultra-soft continuous pill curve ($R = 22\text{pt}$).
+  - **`Matrix Terminal`**: Digital squared terminal corners with cascading matrix rain stream, text decrypt scramble, and blinking cursor `█`.
+  - **`Sunset Synthwave`**: Ultra-soft continuous pill curve ($R = 22\text{pt}$) with horizon gradient aura.
   - **`Dracula Gothic`**: Stepped $45^\circ$ gothic micro-bevels with blood-red and royal violet glow.
-- ⚙️ **Comprehensive Preferences & About Window**:
+- ⚙️ **Comprehensive Preferences & About Window (Liquid Sliding Tabs)**:
   - **Active Task Behavior Modes**: Choose between *Click to Expand (Distraction Free)*, *Hover to Expand*, or *Always Expanded*.
-  - **Idle Hover Control**: Toggle hover drop-down when agent is idle.
+  - **Liquid Sliding Tab Bar**: Telegram/iOS dynamic island inspired sliding indicator bubble.
   - **Launch at Login**: Auto-register/unregister macOS `LaunchAgent` daemon.
 - 🔊 **Sensory Audio-Haptic Engine**: Tactile trackpad haptic pulses on activity changes and subtle completion audio chimes.
 - ⚡ **Neural Equalizer Waveform**: 4-bar dynamic audio/cyberizer animation rendered with CoreAnimation (`CAKeyframeAnimation`).

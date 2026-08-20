@@ -7,14 +7,30 @@ public class ThemeManager {
     public let availableThemes: [ThemeDefinition] = [
         ThemeDefinition(
             id: "general",
-            displayName: "General (Classic)",
+            displayName: "macOS Classic (Dark)",
             shapeType: .rounded,
             hasGlitchEffect: false,
+            hasMatrixRain: false,
+            isLightMode: false,
             palette: ThemePalette(
                 idle: NSColor(red: 0.0, green: 0.88, blue: 0.45, alpha: 1.0),      // #00E073 Emerald
                 thinking: NSColor(red: 0.75, green: 0.35, blue: 1.0, alpha: 1.0),   // #BF5AF2 Neon Purple
                 working: NSColor(red: 0.0, green: 0.94, blue: 1.0, alpha: 1.0),    // #00F0FF Electric Cyan
                 done: NSColor(red: 0.2, green: 0.95, blue: 0.45, alpha: 1.0)       // #34D399 Bright Emerald
+            )
+        ),
+        ThemeDefinition(
+            id: "macos-light",
+            displayName: "macOS Classic (Light)",
+            shapeType: .rounded,
+            hasGlitchEffect: false,
+            hasMatrixRain: false,
+            isLightMode: true,
+            palette: ThemePalette(
+                idle: NSColor(red: 0.12, green: 0.65, blue: 0.30, alpha: 1.0),      // #1FA64D Deep Forest Emerald
+                thinking: NSColor(red: 0.60, green: 0.20, blue: 0.90, alpha: 1.0),   // #9933E6 Royal Purple
+                working: NSColor(red: 0.0, green: 0.48, blue: 1.0, alpha: 1.0),     // #007AFF Apple System Blue
+                done: NSColor(red: 0.15, green: 0.75, blue: 0.35, alpha: 1.0)       // #26BF59 Apple Green
             )
         ),
         ThemeDefinition(

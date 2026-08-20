@@ -276,14 +276,26 @@ public class NotchIslandContentView: NSView {
             }
         }
 
-        // Fill 100% solid pure black
-        NSColor.black.setFill()
-        path.fill()
+        // Fill background
+        if currentTheme.isLightMode {
+            // Light Mode: Pure Crisp Platinum Ceramic
+            NSColor(red: 0.965, green: 0.97, blue: 0.98, alpha: 1.0).setFill()
+            path.fill()
 
-        // Stroke primary glowing contour
-        glowPath.lineWidth = isExpandedMode ? 1.8 : 2.0
-        activeStrokeColor.withAlphaComponent(isExpandedMode ? 0.9 : 0.85).setStroke()
-        glowPath.stroke()
+            // Subtle dark hairline border for Light Mode
+            glowPath.lineWidth = isExpandedMode ? 1.5 : 1.8
+            NSColor(white: 0.0, alpha: 0.18).setStroke()
+            glowPath.stroke()
+        } else {
+            // Dark Mode: 100% solid pure black
+            NSColor.black.setFill()
+            path.fill()
+
+            // Stroke primary glowing contour
+            glowPath.lineWidth = isExpandedMode ? 1.8 : 2.0
+            activeStrokeColor.withAlphaComponent(isExpandedMode ? 0.9 : 0.85).setStroke()
+            glowPath.stroke()
+        }
     }
 
     public override func layout() {
@@ -365,6 +377,7 @@ public class NotchIslandContentView: NSView {
         themeColor = color
         let currentTheme = ThemeManager.shared.currentTheme
         let isMatrix = currentTheme.id == "matrix"
+        let isLight = currentTheme.isLightMode
 
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -373,7 +386,7 @@ public class NotchIslandContentView: NSView {
 
             self.beaconLayer.backgroundColor = color.cgColor
             self.beaconLayer.shadowColor = color.cgColor
-            self.beaconPulseLayer.backgroundColor = color.withAlphaComponent(0.25).cgColor
+            self.beaconPulseLayer.backgroundColor = color.withAlphaComponent(isLight ? 0.35 : 0.25).cgColor
 
             // Typography & Headers
             if isMatrix {
@@ -386,7 +399,7 @@ public class NotchIslandContentView: NSView {
             } else {
                 self.headerLabel.font = NSFont.monospacedSystemFont(ofSize: 9.0, weight: .black)
                 self.detailLabel.font = NSFont.systemFont(ofSize: 11.5, weight: .semibold)
-                self.detailLabel.textColor = .white
+                self.detailLabel.textColor = isLight ? NSColor(red: 0.12, green: 0.12, blue: 0.14, alpha: 1.0) : .white
                 self.headerLabel.stringValue = self.currentActivity.header
             }
 
@@ -402,15 +415,27 @@ public class NotchIslandContentView: NSView {
                 self.detailLabel.stringValue = self.currentActivity.detail
             }
 
-            self.moreButton.layer?.backgroundColor = color.withAlphaComponent(0.12).cgColor
-            self.moreButton.layer?.borderColor = color.withAlphaComponent(0.35).cgColor
-            self.moreButton.attributedTitle = NSAttributedString(
-                string: "⋮",
-                attributes: [
-                    .font: NSFont.systemFont(ofSize: 14, weight: .bold),
-                    .foregroundColor: color
-                ]
-            )
+            if isLight {
+                self.moreButton.layer?.backgroundColor = NSColor(white: 0.0, alpha: 0.06).cgColor
+                self.moreButton.layer?.borderColor = NSColor(white: 0.0, alpha: 0.16).cgColor
+                self.moreButton.attributedTitle = NSAttributedString(
+                    string: "⋮",
+                    attributes: [
+                        .font: NSFont.systemFont(ofSize: 14, weight: .bold),
+                        .foregroundColor: NSColor(red: 0.22, green: 0.22, blue: 0.25, alpha: 1.0)
+                    ]
+                )
+            } else {
+                self.moreButton.layer?.backgroundColor = color.withAlphaComponent(0.12).cgColor
+                self.moreButton.layer?.borderColor = color.withAlphaComponent(0.35).cgColor
+                self.moreButton.attributedTitle = NSAttributedString(
+                    string: "⋮",
+                    attributes: [
+                        .font: NSFont.systemFont(ofSize: 14, weight: .bold),
+                        .foregroundColor: color
+                    ]
+                )
+            }
 
             self.equalizer.setAnimating(self.currentActivity.isAnimated, color: color.cgColor)
 
