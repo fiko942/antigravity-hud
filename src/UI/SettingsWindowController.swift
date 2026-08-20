@@ -207,7 +207,7 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         githubBtn.frame = NSRect(x: startX + btnW + spacing, y: 45, width: btnW, height: 32)
         aboutView.addSubview(githubBtn)
 
-        let donateBtn = NSButton(title: "☕ Saweria ↗", target: self, action: #selector(openSaweria))
+        let donateBtn = NSButton(title: "☕ Donate ↗", target: self, action: #selector(openSaweria))
         donateBtn.bezelStyle = .rounded
         donateBtn.font = NSFont.systemFont(ofSize: 11.5, weight: .bold)
         donateBtn.contentTintColor = NSColor(red: 1.0, green: 0.65, blue: 0.0, alpha: 1.0)
