@@ -1,7 +1,7 @@
 # 🏝️ Antigravity HUD (macOS Dynamic Notch Island)
 
 <p align="center">
-  <img src="./Resources/AppIcon.icns" width="128" height="128" alt="Antigravity HUD Icon" />
+  <img src="./Resources/AppIcon.icns" width="120" height="120" alt="Antigravity HUD Icon" />
 </p>
 
 <p align="center">
@@ -9,39 +9,72 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/fikus942/antigravity-hud/releases"><img src="https://img.shields.io/badge/Release-v1.0.0-00E0FF?style=flat-square&logo=apple" alt="Release" /></a>
+  <a href="https://github.com/fiko942/antigravity-hud/releases"><img src="https://img.shields.io/badge/Release-v1.0.0-00E0FF?style=flat-square&logo=apple" alt="Release" /></a>
   <a href="https://developer.apple.com/swift/"><img src="https://img.shields.io/badge/Language-Swift%206-FA7343?style=flat-square&logo=swift" alt="Swift" /></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-34D399?style=flat-square" alt="License" /></a>
-  <a href="https://github.com/fikus942"><img src="https://img.shields.io/badge/Author-Muhammad%20Fiko%20S.-A855F7?style=flat-square&logo=github" alt="Author" /></a>
+  <a href="https://github.com/fiko942"><img src="https://img.shields.io/badge/Author-Wiji%20Vegetarian-A855F7?style=flat-square&logo=github" alt="Author" /></a>
 </p>
 
 ---
 
-## ✨ Highlights & Features
+## 📸 Live Visual Showcase
 
-- 🏝️ **MacBook Notch Integration**: Sits flush at `Y = 924...956` matching the exact physical hardware geometry of Apple Silicon MacBooks (M1 / M2 / M3 / M4).
-- ⬛ **100% Solid OLED Pure Black (`drawRect`)**: Zero translucency or alpha bleeding. Prevents underlying macOS Menu Bar items (`Window`, `Help`, status icons) from showing through.
-- 🎯 **Smart Dual-Interaction Modes**:
-  - **Idle / Ready Mode**: The widget collapses flush with the notch, displaying only a subtle glowing emerald bottom rim and status dot. Hovering your mouse drops down the full card; moving away auto-closes it.
-  - **Active Working Mode** (*Thinking / Editing Code / Running Tools*): The widget stays tucked into the notch with a pulsing Neon Purple/Cyan rim so it doesn't obstruct your workspace. **Clicking the notch toggles it open / closed** at your convenience.
-- 🔍 **Granular Tool & Step Observability**: Live extraction of target filenames (e.g. `Editing src/main.swift`), command lines, and step numbers (`Step #4`) directly from the agent log stream.
-- 🔊 **Sensory Audio-Haptic Engine**: Native trackpad haptic pulses on state transitions + subtle completion audio chimes (`NSSound`).
-- 🎨 **Dynamic Theme Presets**: User-customizable neon color themes (`Cyberpunk`, `Matrix`, `Sunset`, `Dracula`) via `~/.config/antigravity-hud/theme.json`.
-- ⚡ **Interactive Action Controls**: Click to open active files directly in your editor/Finder, plus an emergency abort button (🛑 `ABORT`).
-- ⚡ **Neural Equalizer Waveform**: 4-bar dynamic audio/cyberizer animation rendered with CoreAnimation (`CAKeyframeAnimation`) while the AI executes tasks.
-- 🚀 **Auto-Start at Login**: Self-registers a native macOS `LaunchAgent` on first launch (`com.google.antigravity.hud.plist`), ensuring zero setup required.
-- 🔒 **Kernel Mutex**: Single-instance lock via `flock` on `/tmp/antigravity-hud.lock` prevents duplicate windows.
-- 🧠 **Global Real-Time Brain Watcher**: Fast 100ms async polling monitoring `~/.gemini/antigravity-ide/brain/` globally across all active sessions.
+<p align="center">
+  <b>⚡ Cyberpunk 2077 (Active Working State with Dynamic Glitch & Neural Waveform)</b><br>
+  <img src="./docs/assets/notch-cyberpunk-working.png" alt="Cyberpunk Working Notch" width="700" />
+</p>
+
+<p align="center">
+  <b>💻 Matrix Terminal (Active Thinking State with Bracket Crosshairs)</b><br>
+  <img src="./docs/assets/notch-matrix-thinking.png" alt="Matrix Thinking Notch" width="700" />
+</p>
+
+<p align="center">
+  <b>🌅 Sunset Synthwave (Task Completed State with Horizon Glow)</b><br>
+  <img src="./docs/assets/notch-sunset-done.png" alt="Sunset Done Notch" width="700" />
+</p>
+
+<p align="center">
+  <b>🧛 Dracula Gothic (Stepped Micro-Bevel Contour)</b><br>
+  <img src="./docs/assets/notch-dracula-thinking.png" alt="Dracula Thinking Notch" width="700" />
+</p>
+
+<p align="center">
+  <img src="./docs/assets/preferences-window.png" alt="Preferences Window" width="380" />
+  &nbsp;&nbsp;
+  <img src="./docs/assets/about-window.png" alt="About Window" width="380" />
+</p>
+
+---
+
+## ✨ Key Features & Highlights
+
+- 🏝️ **Native Hardware Notch Integration**: Aligns perfectly with Liquid Retina XDR hardware camera notch geometry (`Y = 924...956`) across Apple Silicon MacBooks (M1 / M2 / M3 / M4).
+- ⬛ **100% Solid OLED Pure Black (`drawRect`)**: Zero alpha bleeding or menu bar bleed-through. 100% opaque WindowServer backing store.
+- 📐 **Dynamic Notch Shape-Morphing**:
+  - **`General (Classic)`**: Apple-style smooth superellipse ($R = 18\text{pt}$).
+  - **`Cyberpunk 2077`**: Angular $45^\circ$ sci-fi mecha chamfers + active RGB chromatic scanline glitch.
+  - **`Matrix Terminal`**: Digital squared terminal corners with `[ ]` bracket crosshairs.
+  - **`Sunset Synthwave`**: Ultra-soft continuous pill curve ($R = 22\text{pt}$).
+  - **`Dracula Gothic`**: Stepped $45^\circ$ gothic micro-bevels with blood-red and royal violet glow.
+- ⚙️ **Comprehensive Preferences & About Window**:
+  - **Active Task Behavior Modes**: Choose between *Click to Expand (Distraction Free)*, *Hover to Expand*, or *Always Expanded*.
+  - **Idle Hover Control**: Toggle hover drop-down when agent is idle.
+  - **Launch at Login**: Auto-register/unregister macOS `LaunchAgent` daemon.
+- 🔊 **Sensory Audio-Haptic Engine**: Tactile trackpad haptic pulses on activity changes and subtle completion audio chimes.
+- ⚡ **Neural Equalizer Waveform**: 4-bar dynamic audio/cyberizer animation rendered with CoreAnimation (`CAKeyframeAnimation`).
+- 🔒 **Kernel Mutex**: Single-instance lock via `flock` on `/tmp/antigravity-hud.lock` prevents duplicate processes.
+- 🧠 **Global Real-Time Brain Watcher**: 100ms async polling monitoring `~/.gemini/antigravity-ide/brain/` globally across all active sessions.
 
 ---
 
 ## 🎨 Interactive State Palette
 
-| State | Theme Color | Behavior | Description |
+| State | Default Color | Interaction Behavior | Description |
 | :--- | :--- | :--- | :--- |
-| **`READY` / `IDLE`** | 🟢 Emerald (`#00E073`) | Collapsed rim, hover to expand | AI is standing by for user prompt |
-| **`THINKING`** | 🟣 Neon Purple (`#BF5AF2`) | Pulsing rim, click to toggle card | Planner reasoning & structuring steps |
-| **`WORKING`** | 🔵 Electric Cyan (`#00F0FF`) | Equalizer wave, click to toggle card | Editing files, running commands, reading logs |
+| **`READY` / `IDLE`** | 🟢 Emerald (`#00E073`) | Collapsed rim, hover expands | AI is standing by for user prompt |
+| **`THINKING`** | 🟣 Neon Purple (`#BF5AF2`) | Pulsing rim & waveform | Planner reasoning & structuring steps |
+| **`WORKING`** | 🔵 Electric Cyan (`#00F0FF`) | Equalizer wave & active tool path | Editing files, running commands, reading logs |
 | **`DONE`** | 🟢 Bright Emerald (`#34D399`) | Smooth 3.5s finish confirmation | Task successfully completed |
 
 ---
@@ -49,15 +82,15 @@
 ## 📦 Installation
 
 ### Option 1: Download Pre-built DMG (Recommended)
-1. Download the latest `AntigravityHUD-v1.0.0.dmg` from [GitHub Releases](https://github.com/fikus942/antigravity-hud/releases).
+1. Download the latest `AntigravityHUD-v1.0.0.dmg` from [GitHub Releases](https://github.com/fiko942/antigravity-hud/releases).
 2. Open the DMG and drag **`Antigravity HUD.app`** into your **`Applications`** folder.
-3. Open `Antigravity HUD.app` from `/Applications` or Spotlight (`Cmd + Space`).
-4. That's it! It automatically registers with macOS `LaunchAgent` to start silently on login.
+3. Launch `Antigravity HUD.app` from `/Applications` or Spotlight (`Cmd + Space`).
+4. That's it! It automatically registers to start silently on login.
 
 ### Option 2: Build from Source
 ```bash
-# Clone the repository
-git clone https://github.com/fikus942/antigravity-hud.git
+# Clone repository
+git clone https://github.com/fiko942/antigravity-hud.git
 cd antigravity-hud
 
 # Build the native app bundle and DMG installer
@@ -69,7 +102,7 @@ open build/AntigravityHUD.app
 
 ---
 
-## 🛠️ Project Structure
+## 🛠️ Modular Architecture
 
 ```
 antigravity-hud/
@@ -80,24 +113,27 @@ antigravity-hud/
 │   │   ├── AgentActivity.swift      # Activity data model
 │   │   └── BrainWatcher.swift       # Async JSONL seek & log parsing
 │   ├── Core/
-│   │   ├── LaunchAgentManager.swift # Auto-register login daemon
+│   │   ├── LaunchAgentManager.swift # Auto-register / uninstall login daemon
 │   │   ├── SensoryManager.swift     # Trackpad haptics & completion chimes
+│   │   ├── SettingsManager.swift    # Persistent configuration engine
 │   │   └── SingleInstanceMutex.swift# Kernel mutex flock locking
 │   ├── Themes/
 │   │   ├── ThemeManager.swift       # State color palettes & config persistence
 │   │   └── ThemeStyle.swift         # Dynamic notch geometry shapes & glitch specs
 │   ├── UI/
-│   │   ├── AntigravityNotchPanel.swift # AppKit floating panel at Level 102
-│   │   ├── CyberEqualizerLayer.swift   # 4-bar CoreAnimation waveform
-│   │   ├── GlitchOverlayLayer.swift    # Cyberpunk chromatic shift glitch
-│   │   └── NotchIslandContentView.swift# Dynamic notch shape drawing & kebab menu
+│   │   ├── AntigravityNotchPanel.swift    # AppKit floating panel at Level 102
+│   │   ├── CyberEqualizerLayer.swift      # 4-bar CoreAnimation waveform
+│   │   ├── GlitchOverlayLayer.swift       # Cyberpunk chromatic shift glitch
+│   │   ├── NotchIslandContentView.swift   # Dynamic notch shape drawing & kebab menu
+│   │   └── SettingsWindowController.swift # Preferences & About window
 │   └── main.swift                   # Clean application entry point
 ├── Resources/
 │   ├── AppIcon.icns                 # High-DPI macOS application icon
 │   ├── Info.plist                   # macOS bundle metadata
 │   └── theme.example.json           # Example theme configuration
 ├── docs/
-│   └── ARCHITECTURE.md              # Engineering deep dive & hardware notch specs
+│   ├── ARCHITECTURE.md              # Engineering deep dive & hardware notch specs
+│   └── assets/                      # High-res screenshots and showcase images
 ├── build.sh                         # Production modular compiler & DMG generator
 ├── package.json                     # Tooling & metadata
 ├── LICENSE                          # MIT License
@@ -108,9 +144,7 @@ antigravity-hud/
 
 ## 👤 Author & Credits
 
-Created and engineered by **[Muhammad Fiko S.](https://github.com/fikus942)** (`@fikus942`).
-
-Built with love for developers and AI engineers who love clean, futuristic macOS interfaces.
+Created and engineered with ❤️ by **[Wiji Vegetarian (Wiji Fiko Teren)](https://github.com/fiko942)** (`@fiko942`).
 
 ---
 

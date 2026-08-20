@@ -143,8 +143,13 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
         // App Icon / Futuristic Badge
         let iconImageView = NSImageView(frame: NSRect(x: (520 - 72) / 2, y: 270, width: 72, height: 72))
-        if let icon = NSApp.applicationIconImage {
-            iconImageView.image = icon
+        if let iconPath = Bundle.main.path(forResource: "AppIcon", ofType: "icns"),
+           let img = NSImage(contentsOfFile: iconPath) {
+            iconImageView.image = img
+        } else if let appIcon = NSImage(contentsOfFile: "/Applications/AntigravityHUD.app/Contents/Resources/AppIcon.icns") {
+            iconImageView.image = appIcon
+        } else if let img = NSApp.applicationIconImage {
+            iconImageView.image = img
         }
         aboutView.addSubview(iconImageView)
 
@@ -172,7 +177,7 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         aboutView.addSubview(descLabel)
 
         // Author credits
-        let authorLabel = NSTextField(labelWithString: "Created & engineered by Muhammad Fiko S. (@fikus942)")
+        let authorLabel = NSTextField(labelWithString: "Created & engineered by Wiji Vegetarian (@fiko942)")
         authorLabel.font = NSFont.systemFont(ofSize: 11.5, weight: .semibold)
         authorLabel.alignment = .center
         authorLabel.frame = NSRect(x: 0, y: 95, width: 520, height: 18)

@@ -17,14 +17,14 @@
     "appkit",
     "swift"
   ],
-  "author": "Muhammad Fiko S. (https://github.com/fikus942)",
+  "author": "Wiji Vegetarian (https://github.com/fiko942)",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/fikus942/antigravity-hud.git"
+    "url": "git+https://github.com/fiko942/antigravity-hud.git"
   },
   "bugs": {
-    "url": "https://github.com/fikus942/antigravity-hud/issues"
+    "url": "https://github.com/fiko942/antigravity-hud/issues"
   },
-  "homepage": "https://github.com/fikus942/antigravity-hud#readme"
+  "homepage": "https://github.com/fiko942/antigravity-hud#readme"
 }

@@ -42,4 +42,16 @@ public class LaunchAgentManager {
             try? task.run()
         }
     }
+
+    public static func uninstall() {
+        let agentDir = ("~/Library/LaunchAgents" as NSString).expandingTildeInPath
+        let plistPath = (agentDir as NSString).appendingPathComponent("com.google.antigravity.hud.plist")
+        if FileManager.default.fileExists(atPath: plistPath) {
+            let task = Process()
+            task.launchPath = "/bin/launchctl"
+            task.arguments = ["unload", "-w", plistPath]
+            try? task.run()
+            try? FileManager.default.removeItem(atPath: plistPath)
+        }
+    }
 }

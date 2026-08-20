@@ -63,6 +63,8 @@ public class SettingsManager {
         // Sync with LaunchAgent if setting changed
         if launchAtLogin {
             LaunchAgentManager.ensureInstalled()
+        } else {
+            LaunchAgentManager.uninstall()
         }
 
         onSettingsChanged?()
