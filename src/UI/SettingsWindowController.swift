@@ -5,11 +5,115 @@ public enum SettingsTab: Int {
     case about = 1
 }
 
+// MARK: - Modern Telegram-Style Liquid Sliding Bubble Tab Control
+public class LiquidPillSegmentedControl: NSView {
+    public var onSelectionChanged: ((Int) -> Void)?
+    public private(set) var selectedIndex: Int = 0
+
+    private var items: [String] = []
+    private let bubbleLayer = CALayer()
+    private var itemButtons: [NSButton] = []
+
+    public init(items: [String], frame: NSRect) {
+        self.items = items
+        super.init(frame: frame)
+        wantsLayer = true
+        setupUI()
+    }
+
+    public override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        wantsLayer = true
+    }
+
+    public required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        wantsLayer = true
+    }
+
+    private func setupUI() {
+        guard let layer = self.layer else { return }
+
+        // Outer pill capsule container (Adaptive Dark Glass)
+        layer.cornerRadius = bounds.height / 2
+        layer.backgroundColor = NSColor(white: 0.12, alpha: 0.75).cgColor
+        layer.borderColor = NSColor(white: 1.0, alpha: 0.14).cgColor
+        layer.borderWidth = 1.0
+        layer.masksToBounds = false
+
+        // Sliding bubble indicator (Telegram / Dynamic Island style)
+        let padding: CGFloat = 3.0
+        let itemW = (bounds.width - (padding * 2)) / CGFloat(max(1, items.count))
+        let itemH = bounds.height - (padding * 2)
+
+        bubbleLayer.cornerRadius = itemH / 2
+        bubbleLayer.backgroundColor = NSColor(red: 0.0, green: 0.52, blue: 0.98, alpha: 0.95).cgColor
+        bubbleLayer.borderColor = NSColor(white: 1.0, alpha: 0.25).cgColor
+        bubbleLayer.borderWidth = 0.5
+        bubbleLayer.shadowColor = NSColor(red: 0.0, green: 0.45, blue: 0.98, alpha: 0.5).cgColor
+        bubbleLayer.shadowOpacity = 0.45
+        bubbleLayer.shadowRadius = 6
+        bubbleLayer.shadowOffset = CGSize(width: 0, height: -1)
+        bubbleLayer.frame = CGRect(x: padding, y: padding, width: itemW, height: itemH)
+        layer.addSublayer(bubbleLayer)
+
+        // Item buttons
+        for (i, title) in items.enumerated() {
+            let btn = NSButton(title: title, target: self, action: #selector(itemClicked(_:)))
+            btn.tag = i
+            btn.isBordered = false
+            btn.wantsLayer = true
+            btn.font = NSFont.systemFont(ofSize: 12.5, weight: i == 0 ? .bold : .medium)
+            btn.contentTintColor = i == 0 ? .white : NSColor(white: 0.7, alpha: 1.0)
+            btn.frame = NSRect(x: padding + CGFloat(i) * itemW, y: padding, width: itemW, height: itemH)
+            addSubview(btn)
+            itemButtons.append(btn)
+        }
+    }
+
+    public func setSelectedIndex(_ index: Int, animated: Bool = true) {
+        guard index >= 0 && index < items.count else { return }
+        selectedIndex = index
+
+        let padding: CGFloat = 3.0
+        let itemW = (bounds.width - (padding * 2)) / CGFloat(items.count)
+        let targetX = padding + CGFloat(index) * itemW
+        let targetFrame = CGRect(x: targetX, y: padding, width: itemW, height: bounds.height - (padding * 2))
+
+        for (i, btn) in itemButtons.enumerated() {
+            btn.font = NSFont.systemFont(ofSize: 12.5, weight: i == index ? .bold : .medium)
+            btn.contentTintColor = i == index ? .white : NSColor(white: 0.7, alpha: 1.0)
+        }
+
+        if animated {
+            CATransaction.begin()
+            CATransaction.setAnimationDuration(0.26)
+            CATransaction.setAnimationTimingFunction(CAMediaTimingFunction(controlPoints: 0.2, 0.9, 0.3, 1.0))
+            bubbleLayer.frame = targetFrame
+            CATransaction.commit()
+        } else {
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
+            bubbleLayer.frame = targetFrame
+            CATransaction.commit()
+        }
+    }
+
+    @objc private func itemClicked(_ sender: NSButton) {
+        let index = sender.tag
+        if index != selectedIndex {
+            setSelectedIndex(index, animated: true)
+            SensoryManager.shared.triggerHaptic(pattern: .generic)
+            onSelectionChanged?(index)
+        }
+    }
+}
+
 // MARK: - Modern Glassmorphic Preferences & About Window Controller
 public class SettingsWindowController: NSWindowController, NSWindowDelegate {
     public static let shared = SettingsWindowController()
 
-    private var segmentedControl: NSSegmentedControl!
+    private var pillSegmentedControl: LiquidPillSegmentedControl!
     private var containerView: NSView!
 
     private var settingsView: NSView!
@@ -56,11 +160,17 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         visualEffect.blendingMode = .behindWindow
         window.contentView = visualEffect
 
-        // Top Segmented Control Switcher
-        segmentedControl = NSSegmentedControl(labels: ["⚙️ Settings", "ℹ️ About"], trackingMode: .selectOne, target: self, action: #selector(tabChanged))
-        segmentedControl.selectedSegment = 0
-        segmentedControl.frame = NSRect(x: (520 - 240) / 2, y: 390, width: 240, height: 32)
-        visualEffect.addSubview(segmentedControl)
+        // Top Telegram-Style Liquid Pill Control
+        pillSegmentedControl = LiquidPillSegmentedControl(
+            items: ["⚙️ Settings", "ℹ️ About"],
+            frame: NSRect(x: (520 - 240) / 2, y: 390, width: 240, height: 32)
+        )
+        pillSegmentedControl.onSelectionChanged = { [weak self] index in
+            if let tab = SettingsTab(rawValue: index) {
+                self?.showTab(tab)
+            }
+        }
+        visualEffect.addSubview(pillSegmentedControl)
 
         // Main Container View
         containerView = NSView(frame: NSRect(x: 0, y: 0, width: 520, height: 380))
@@ -120,20 +230,20 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         settingsView.addSubview(themePopup)
         currentY -= 40
 
-        // Section 3: Sensory & System
-        let sensoryHeader = makeSectionHeader(title: "Sensory & System", y: currentY)
+        // Section 3: Sensory & Launch
+        let sensoryHeader = makeSectionHeader(title: "Sensory & Automation", y: currentY)
         settingsView.addSubview(sensoryHeader)
         currentY -= 30
 
-        soundCheck = makeCheckbox(title: "Play audio chime when agent completes a task", y: currentY, action: #selector(soundChanged))
+        soundCheck = makeCheckbox(title: "Play audio chime on task completion", y: currentY, action: #selector(soundChanged))
         settingsView.addSubview(soundCheck)
         currentY -= 26
 
-        hapticCheck = makeCheckbox(title: "Trigger trackpad haptic pulses on activity changes", y: currentY, action: #selector(hapticChanged))
+        hapticCheck = makeCheckbox(title: "Enable trackpad haptic feedback on state changes", y: currentY, action: #selector(hapticChanged))
         settingsView.addSubview(hapticCheck)
         currentY -= 26
 
-        launchLoginCheck = makeCheckbox(title: "Launch Antigravity HUD automatically at macOS login", y: currentY, action: #selector(launchLoginChanged))
+        launchLoginCheck = makeCheckbox(title: "Launch Antigravity HUD automatically at login", y: currentY, action: #selector(launchLoginChanged))
         settingsView.addSubview(launchLoginCheck)
     }
 
@@ -141,12 +251,10 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
     private func buildAboutView() {
         aboutView = NSView(frame: containerView.bounds)
 
-        // App Icon / Futuristic Badge
+        // App Icon
         let iconImageView = NSImageView(frame: NSRect(x: (520 - 72) / 2, y: 270, width: 72, height: 72))
         if let iconPath = Bundle.main.path(forResource: "AppIcon", ofType: "icns"),
-           let img = NSImage(contentsOfFile: iconPath) {
-            iconImageView.image = img
-        } else if let appIcon = NSImage(contentsOfFile: "/Applications/AntigravityHUD.app/Contents/Resources/AppIcon.icns") {
+           let appIcon = NSImage(contentsOfFile: iconPath) {
             iconImageView.image = appIcon
         } else if let img = NSApp.applicationIconImage {
             iconImageView.image = img
@@ -219,7 +327,7 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
     public func showWindow(tab: SettingsTab) {
         refreshControls()
         showTab(tab)
-        segmentedControl.selectedSegment = tab.rawValue
+        pillSegmentedControl.setSelectedIndex(tab.rawValue, animated: false)
         NSApp.activate(ignoringOtherApps: true)
         self.window?.makeKeyAndOrderFront(nil)
     }
@@ -233,12 +341,6 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         case .about:
             containerView.addSubview(aboutView)
             window?.title = "About Antigravity HUD"
-        }
-    }
-
-    @objc private func tabChanged() {
-        if let tab = SettingsTab(rawValue: segmentedControl.selectedSegment) {
-            showTab(tab)
         }
     }
 
@@ -330,16 +432,16 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
     private func makeLabel(text: String, y: CGFloat, isSub: Bool) -> NSTextField {
         let label = NSTextField(labelWithString: text)
-        label.font = isSub ? NSFont.systemFont(ofSize: 11) : NSFont.systemFont(ofSize: 12)
+        label.font = NSFont.systemFont(ofSize: isSub ? 11 : 12.5, weight: isSub ? .regular : .medium)
         label.textColor = isSub ? .secondaryLabelColor : .labelColor
-        label.frame = NSRect(x: 35, y: y, width: 440, height: 16)
+        label.frame = NSRect(x: 35, y: y, width: 440, height: 18)
         return label
     }
 
     private func makeCheckbox(title: String, y: CGFloat, action: Selector) -> NSButton {
-        let button = NSButton(checkboxWithTitle: title, target: self, action: action)
-        button.font = NSFont.systemFont(ofSize: 12)
-        button.frame = NSRect(x: 35, y: y, width: 440, height: 18)
-        return button
+        let btn = NSButton(checkboxWithTitle: title, target: self, action: action)
+        btn.font = NSFont.systemFont(ofSize: 12.5, weight: .regular)
+        btn.frame = NSRect(x: 35, y: y, width: 440, height: 20)
+        return btn
     }
 }
