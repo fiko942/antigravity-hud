@@ -188,22 +188,30 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         authorButton.frame = NSRect(x: 0, y: 95, width: 520, height: 20)
         aboutView.addSubview(authorButton)
 
-        // Action Buttons: Portfolio & GitHub
-        let btnW: CGFloat = 175
-        let spacing: CGFloat = 14
-        let startX = (520 - (btnW * 2 + spacing)) / 2
+        // Action Buttons: Portfolio, GitHub, & Donate Saweria
+        let btnW: CGFloat = 145
+        let spacing: CGFloat = 10
+        let totalW = (btnW * 3) + (spacing * 2)
+        let startX = (520 - totalW) / 2
 
-        let portfolioBtn = NSButton(title: "🌐 Creator Portfolio ↗", target: self, action: #selector(openPortfolio))
+        let portfolioBtn = NSButton(title: "🌐 Portfolio ↗", target: self, action: #selector(openPortfolio))
         portfolioBtn.bezelStyle = .rounded
         portfolioBtn.font = NSFont.systemFont(ofSize: 11.5, weight: .medium)
         portfolioBtn.frame = NSRect(x: startX, y: 45, width: btnW, height: 32)
         aboutView.addSubview(portfolioBtn)
 
-        let githubBtn = NSButton(title: "🐙 GitHub Repository ↗", target: self, action: #selector(openGitHub))
+        let githubBtn = NSButton(title: "🐙 GitHub ↗", target: self, action: #selector(openGitHub))
         githubBtn.bezelStyle = .rounded
         githubBtn.font = NSFont.systemFont(ofSize: 11.5, weight: .medium)
         githubBtn.frame = NSRect(x: startX + btnW + spacing, y: 45, width: btnW, height: 32)
         aboutView.addSubview(githubBtn)
+
+        let donateBtn = NSButton(title: "☕ Saweria ↗", target: self, action: #selector(openSaweria))
+        donateBtn.bezelStyle = .rounded
+        donateBtn.font = NSFont.systemFont(ofSize: 11.5, weight: .bold)
+        donateBtn.contentTintColor = NSColor(red: 1.0, green: 0.65, blue: 0.0, alpha: 1.0)
+        donateBtn.frame = NSRect(x: startX + (btnW + spacing) * 2, y: 45, width: btnW, height: 32)
+        aboutView.addSubview(donateBtn)
     }
 
     // MARK: - Actions & Sync
@@ -294,6 +302,12 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
     @objc private func openPortfolio() {
         if let url = URL(string: "https://wijifikoteren.streampeg.com") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
+    @objc private func openSaweria() {
+        if let url = URL(string: "https://saweria.co/fiko942") {
             NSWorkspace.shared.open(url)
         }
     }

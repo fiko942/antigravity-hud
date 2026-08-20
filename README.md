@@ -13,6 +13,7 @@
   <a href="https://developer.apple.com/swift/"><img src="https://img.shields.io/badge/Language-Swift%206-FA7343?style=flat-square&logo=swift" alt="Swift" /></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-34D399?style=flat-square" alt="License" /></a>
   <a href="https://wijifikoteren.streampeg.com"><img src="https://img.shields.io/badge/Author-Wiji%20Fiko%20Teren-A855F7?style=flat-square&logo=safari" alt="Author Portfolio" /></a>
+  <a href="https://saweria.co/fiko942"><img src="https://img.shields.io/badge/Donate-Saweria-FF8800?style=flat-square&logo=coffeescript" alt="Donate via Saweria" /></a>
 </p>
 
 ---
@@ -147,6 +148,19 @@ antigravity-hud/
 Created and engineered with ❤️ by **[Wiji Fiko Teren](https://wijifikoteren.streampeg.com)** ([@fiko942](https://github.com/fiko942)).
 - 🌐 **Portfolio**: [https://wijifikoteren.streampeg.com](https://wijifikoteren.streampeg.com)
 - 🐙 **GitHub**: [@fiko942](https://github.com/fiko942)
+
+---
+
+## ☕ Support & Donations
+
+If you enjoy using **Antigravity HUD** and want to support ongoing development, maintenance, and new features, you can buy me a coffee via **Saweria**:
+
+<p align="center">
+  <a href="https://saweria.co/fiko942">
+    <img src="./docs/assets/saweria-qr.png" width="180" height="180" alt="Saweria QR Code" />
+  </a><br>
+  👉 <b><a href="https://saweria.co/fiko942">saweria.co/fiko942</a></b>
+</p>
 
 ---
 
