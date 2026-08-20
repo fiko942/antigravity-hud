@@ -356,14 +356,119 @@ public class NotchIslandContentView: NSView {
     }
 
     private func startPulseAnimation() {
-        let pulse = CABasicAnimation(keyPath: "transform.scale")
-        pulse.fromValue = 0.85
-        pulse.toValue = 1.4
-        pulse.duration = 0.85
-        pulse.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-        pulse.autoreverses = true
-        pulse.repeatCount = .infinity
-        beaconPulseLayer.add(pulse, forKey: "pulse")
+        configureBeaconAnimation(for: ThemeManager.shared.currentTheme, color: themeColor)
+    }
+
+    private func configureBeaconAnimation(for theme: ThemeDefinition, color: NSColor) {
+        beaconLayer.removeAllAnimations()
+        beaconPulseLayer.removeAllAnimations()
+
+        switch theme.beaconStyle {
+        case .venturaSiriPulse:
+            // macOS 13 Ventura organic Siri breathing orb
+            beaconLayer.cornerRadius = 4.0
+            beaconPulseLayer.cornerRadius = 8.0
+            beaconLayer.transform = CATransform3DIdentity
+            beaconPulseLayer.transform = CATransform3DIdentity
+
+            let pulse = CABasicAnimation(keyPath: "transform.scale")
+            pulse.fromValue = 0.88
+            pulse.toValue = 1.35
+            pulse.duration = 1.4
+            pulse.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+            pulse.autoreverses = true
+            pulse.repeatCount = .infinity
+            beaconPulseLayer.add(pulse, forKey: "pulse")
+
+            let alphaAnim = CABasicAnimation(keyPath: "opacity")
+            alphaAnim.fromValue = 0.75
+            alphaAnim.toValue = 0.25
+            alphaAnim.duration = 1.4
+            alphaAnim.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+            alphaAnim.autoreverses = true
+            alphaAnim.repeatCount = .infinity
+            beaconPulseLayer.add(alphaAnim, forKey: "alphaPulse")
+
+        case .cyberpunkGlitchStrobe:
+            // Cyberpunk 2077 angular diamond strobe with erratic twitching
+            beaconLayer.cornerRadius = 1.5
+            beaconPulseLayer.cornerRadius = 2.0
+            beaconLayer.transform = CATransform3DMakeRotation(.pi / 4, 0, 0, 1)
+            beaconPulseLayer.transform = CATransform3DMakeRotation(.pi / 4, 0, 0, 1)
+
+            let strobe = CAKeyframeAnimation(keyPath: "opacity")
+            strobe.values = [1.0, 0.2, 0.9, 0.1, 1.0, 0.3, 0.8, 0.1, 1.0]
+            strobe.keyTimes = [0.0, 0.15, 0.22, 0.35, 0.48, 0.62, 0.75, 0.88, 1.0]
+            strobe.duration = 0.7
+            strobe.repeatCount = .infinity
+            beaconPulseLayer.add(strobe, forKey: "cyberStrobe")
+
+            let scaleTwitch = CAKeyframeAnimation(keyPath: "transform.scale")
+            scaleTwitch.values = [1.0, 1.4, 0.95, 1.35, 1.0]
+            scaleTwitch.keyTimes = [0.0, 0.25, 0.5, 0.75, 1.0]
+            scaleTwitch.duration = 0.7
+            scaleTwitch.repeatCount = .infinity
+            beaconPulseLayer.add(scaleTwitch, forKey: "cyberScale")
+
+        case .matrixTerminalBlock:
+            // Matrix Terminal square cursor stepped binary blink
+            beaconLayer.cornerRadius = 0.5
+            beaconPulseLayer.cornerRadius = 0.5
+            beaconLayer.transform = CATransform3DIdentity
+            beaconPulseLayer.transform = CATransform3DIdentity
+
+            let binaryBlink = CAKeyframeAnimation(keyPath: "opacity")
+            binaryBlink.values = [1.0, 1.0, 0.0, 0.0, 1.0]
+            binaryBlink.keyTimes = [0.0, 0.49, 0.5, 0.99, 1.0]
+            binaryBlink.duration = 0.6
+            binaryBlink.repeatCount = .infinity
+            beaconPulseLayer.add(binaryBlink, forKey: "matrixBlink")
+
+        case .synthwaveHorizonHalo:
+            // Sunset Synthwave expanding neon horizon halo rings
+            beaconLayer.cornerRadius = 4.0
+            beaconPulseLayer.cornerRadius = 8.0
+            beaconLayer.transform = CATransform3DIdentity
+            beaconPulseLayer.transform = CATransform3DIdentity
+
+            let haloExpand = CABasicAnimation(keyPath: "transform.scale")
+            haloExpand.fromValue = 0.9
+            haloExpand.toValue = 2.4
+            haloExpand.duration = 1.5
+            haloExpand.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            haloExpand.repeatCount = .infinity
+            beaconPulseLayer.add(haloExpand, forKey: "haloExpand")
+
+            let haloFade = CABasicAnimation(keyPath: "opacity")
+            haloFade.fromValue = 0.85
+            haloFade.toValue = 0.0
+            haloFade.duration = 1.5
+            haloFade.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            haloFade.repeatCount = .infinity
+            beaconPulseLayer.add(haloFade, forKey: "haloFade")
+
+        case .draculaGothicHeartbeat:
+            // Dracula Gothic floating eerie vampire double-pulse heartbeat
+            beaconLayer.cornerRadius = 4.0
+            beaconPulseLayer.cornerRadius = 8.0
+            beaconLayer.transform = CATransform3DIdentity
+            beaconPulseLayer.transform = CATransform3DIdentity
+
+            let heartbeat = CAKeyframeAnimation(keyPath: "transform.scale")
+            heartbeat.values = [1.0, 1.35, 1.08, 1.5, 1.0, 1.0]
+            heartbeat.keyTimes = [0.0, 0.18, 0.32, 0.5, 0.72, 1.0]
+            heartbeat.duration = 1.3
+            heartbeat.repeatCount = .infinity
+            beaconPulseLayer.add(heartbeat, forKey: "draculaHeartbeat")
+
+            let floatAnim = CAKeyframeAnimation(keyPath: "position.y")
+            let midY = beaconLayer.position.y
+            floatAnim.values = [midY, midY - 2.5, midY, midY + 2.5, midY]
+            floatAnim.keyTimes = [0.0, 0.25, 0.5, 0.75, 1.0]
+            floatAnim.duration = 2.6
+            floatAnim.repeatCount = .infinity
+            beaconLayer.add(floatAnim, forKey: "draculaFloat")
+        }
     }
 
     public func updateActivity(_ activity: AgentActivity) {
@@ -388,22 +493,22 @@ public class NotchIslandContentView: NSView {
             self.beaconLayer.shadowColor = color.cgColor
             self.beaconPulseLayer.backgroundColor = color.withAlphaComponent(isLight ? 0.35 : 0.25).cgColor
 
+            // Distinct Fonts for Every Theme
+            self.headerLabel.font = currentTheme.makeHeaderFont(size: 9.0)
+            self.detailLabel.font = currentTheme.makeDetailFont(size: 11.5)
+
             // Typography & Headers
             if isMatrix {
-                self.headerLabel.font = NSFont.monospacedSystemFont(ofSize: 9.0, weight: .black)
-                self.detailLabel.font = NSFont.monospacedSystemFont(ofSize: 11.0, weight: .bold)
                 self.detailLabel.textColor = NSColor(red: 0.8, green: 1.0, blue: 0.85, alpha: 1.0)
-
                 let stateTag = self.currentActivity.state.uppercased()
                 self.headerLabel.stringValue = "> SYS://AGY.KERNEL [\(stateTag)]"
             } else {
-                self.headerLabel.font = NSFont.monospacedSystemFont(ofSize: 9.0, weight: .black)
-                self.detailLabel.font = NSFont.systemFont(ofSize: 11.5, weight: .semibold)
                 self.detailLabel.textColor = isLight ? NSColor(red: 0.12, green: 0.12, blue: 0.14, alpha: 1.0) : .white
                 self.headerLabel.stringValue = self.currentActivity.header
             }
 
             self.headerLabel.textColor = color
+            self.configureBeaconAnimation(for: currentTheme, color: color)
 
             // Text Decrypt / Scramble Animation for Matrix Theme
             if isMatrix {

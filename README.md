@@ -62,13 +62,13 @@
 
 - 🏝️ **Native Hardware Notch Integration**: Aligns perfectly with Liquid Retina XDR hardware camera notch geometry (`Y = 924...956`) across Apple Silicon MacBooks (M1 / M2 / M3 / M4).
 - ⬛ **100% Solid OLED Pure Black (`drawRect`) & Light Mode Ceramic**: Zero alpha bleeding or menu bar bleed-through. 100% opaque WindowServer backing store with adaptive Light/Dark mode support.
-- 📐 **Dynamic Notch Shape-Morphing**:
-  - **`macOS Classic (Dark)`**: Pure deep obsidian black with Apple smooth superellipse ($R = 18\text{pt}$).
-  - **`macOS Classic (Light)`**: Crisp platinum ceramic floating drop-down with dark typography for daytime productivity.
-  - **`Cyberpunk 2077`**: Angular $45^\circ$ sci-fi mecha chamfers + active RGB chromatic scanline glitch.
-  - **`Matrix Terminal`**: Digital squared terminal corners with cascading matrix rain stream, text decrypt scramble, and blinking cursor `█`.
-  - **`Sunset Synthwave`**: Ultra-soft continuous pill curve ($R = 22\text{pt}$) with horizon gradient aura.
-  - **`Dracula Gothic`**: Stepped $45^\circ$ gothic micro-bevels with blood-red and royal violet glow.
+- 📐 **Dynamic Notch Shape-Morphing, Distinct Typography & Unique Beacon Animations**:
+  - **`macOS Classic (Dark)`**: Pure deep obsidian black with Apple smooth superellipse ($R = 18\text{pt}$), `SF Pro` typography, and smooth organic Siri breathing beacon.
+  - **`macOS Classic (Light)`**: Crisp platinum ceramic floating drop-down with dark `SF Pro` typography and subtle specular borders for daytime productivity.
+  - **`Cyberpunk 2077`**: Angular $45^\circ$ sci-fi mecha chamfers + active RGB chromatic scanline glitch, heavy `Helvetica Neue Condensed Black` & `Avenir Black` tech typography, and high-frequency diamond glitch strobe beacon.
+  - **`Matrix Terminal`**: Digital squared terminal corners with authentic `Menlo` monospace typography, cascading matrix rain stream, text decrypt scramble, and square binary blink beacon.
+  - **`Sunset Synthwave`**: Ultra-soft continuous pill curve ($R = 22\text{pt}$), authentic 80s `Futura Bold` & `Futura Medium` typography, and expanding neon horizon halo ripple beacon.
+  - **`Dracula Gothic`**: Stepped $45^\circ$ gothic micro-bevels with blood-red and royal violet glow, sharp Victorian `Didot Bold` & `Palatino Bold` serif typography, and floating vampire heartbeat beacon.
 - ⚙️ **Comprehensive Preferences & About Window (Liquid Sliding Tabs)**:
   - **Active Task Behavior Modes**: Choose between *Click to Expand (Distraction Free)*, *Hover to Expand*, or *Always Expanded*.
   - **Liquid Sliding Tab Bar**: Telegram/iOS dynamic island inspired sliding indicator bubble.
