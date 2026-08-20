@@ -129,20 +129,20 @@ public class ThemeManager {
     }
 
     public func loadUserTheme() {
-        let configPath = ("~/.config/antigravity-hud/theme.json" as NSString).expandingTildeInPath
-        guard let data = try? Data(contentsOf: URL(fileURLWithPath: configPath)),
-              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return }
-
-        if let sound = json["soundEnabled"] as? Bool { self.soundEnabled = sound }
-        if let haptics = json["hapticsEnabled"] as? Bool { self.hapticsEnabled = haptics }
-
-        if let active = json["activeTheme"] as? String,
-           let matched = availableThemes.first(where: { $0.id == active.lowercased() }) {
+        let active = SQLiteStorageManager.shared.getString("active_theme", default: "general")
+        if let matched = availableThemes.first(where: { $0.id == active.lowercased() }) {
             self.currentTheme = matched
         }
+        self.soundEnabled = SQLiteStorageManager.shared.getBool("sound_enabled", default: true)
+        self.hapticsEnabled = SQLiteStorageManager.shared.getBool("haptics_enabled", default: true)
     }
 
     public func saveUserTheme() {
+        SQLiteStorageManager.shared.setString("active_theme", value: self.currentTheme.id)
+        SQLiteStorageManager.shared.setBool("sound_enabled", value: self.soundEnabled)
+        SQLiteStorageManager.shared.setBool("haptics_enabled", value: self.hapticsEnabled)
+
+        // Legacy mirror
         let configDir = ("~/.config/antigravity-hud" as NSString).expandingTildeInPath
         let configPath = (configDir as NSString).appendingPathComponent("theme.json")
 

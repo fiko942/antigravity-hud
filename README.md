@@ -128,7 +128,8 @@ antigravity-hud/
 │   │   ├── LaunchAgentManager.swift # Auto-register / uninstall login daemon
 │   │   ├── SensoryManager.swift     # Trackpad haptics & completion chimes
 │   │   ├── SettingsManager.swift    # Persistent configuration engine
-│   │   └── SingleInstanceMutex.swift# Kernel mutex flock locking
+│   │   ├── SingleInstanceMutex.swift# Kernel mutex flock locking
+│   │   └── SQLiteStorageManager.swift# Native SQLite3 WAL atomic persistence engine
 │   ├── Themes/
 │   │   ├── ThemeManager.swift       # State color palettes & config persistence
 │   │   └── ThemeStyle.swift         # Dynamic notch geometry shapes & glitch specs
@@ -136,8 +137,10 @@ antigravity-hud/
 │   │   ├── AntigravityNotchPanel.swift    # AppKit floating panel at Level 102
 │   │   ├── CyberEqualizerLayer.swift      # 4-bar CoreAnimation waveform
 │   │   ├── GlitchOverlayLayer.swift       # Cyberpunk chromatic shift glitch
+│   │   ├── MatrixRainLayer.swift          # Matrix digital rain animation layer
 │   │   ├── NotchIslandContentView.swift   # Dynamic notch shape drawing & kebab menu
-│   │   └── SettingsWindowController.swift # Preferences & About window
+│   │   ├── NotchPreviewBoxView.swift      # Real-time simulated notch live preview canvas
+│   │   └── SettingsWindowController.swift # Preferences (Sliders, Preview) & About window
 │   └── main.swift                   # Clean application entry point
 ├── Resources/
 │   ├── AppIcon.icns                 # High-DPI macOS application icon

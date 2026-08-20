@@ -34,6 +34,16 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
             LaunchAgentManager.ensureInstalled()
         }
 
+        if CommandLine.arguments.contains("--preferences") || CommandLine.arguments.contains("-p") {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                SettingsWindowController.shared.showWindow(tab: .settings)
+            }
+        } else if CommandLine.arguments.contains("--about") {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                SettingsWindowController.shared.showWindow(tab: .about)
+            }
+        }
+
         guard let screen = NSScreen.main else { return }
         screenTop = screen.frame.maxY
         screenMidX = screen.frame.midX
@@ -271,12 +281,15 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func checkMouseHover() {
         let mouseLoc = NSEvent.mouseLocation
+        let expW = SettingsManager.shared.expandedWidth
+        let expH = SettingsManager.shared.expandedHeight
+        let compW = SettingsManager.shared.compactWidth
 
         let hoverHitBox = NSRect(
-            x: screenMidX - (isHovered ? 190 : 100),
-            y: screenTop - (isHovered ? 78 : 36),
-            width: isHovered ? 380 : 200,
-            height: isHovered ? 80 : 38
+            x: screenMidX - (isHovered ? (expW / 2) : (compW / 2)),
+            y: screenTop - (isHovered ? (notchH + expH + 4) : (notchH + 4)),
+            width: isHovered ? expW : compW,
+            height: isHovered ? (notchH + expH + 6) : (notchH + 6)
         )
 
         let inside = hoverHitBox.contains(mouseLoc)
@@ -287,17 +300,21 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func updateNotchDimensions() {
-        var targetW: CGFloat = 185.0
+        let expW = SettingsManager.shared.expandedWidth
+        let expH = SettingsManager.shared.expandedHeight
+        let compW = SettingsManager.shared.compactWidth
+
+        var targetW: CGFloat = compW
         var targetDropH: CGFloat = 2.0
         var shouldExpand = false
 
         if currentActivity.state == "idle" {
             if SettingsManager.shared.idleHoverExpands && isHovered {
-                targetW = 380.0
-                targetDropH = 46.0
+                targetW = expW
+                targetDropH = expH
                 shouldExpand = true
             } else {
-                targetW = 185.0
+                targetW = compW
                 targetDropH = 2.0
                 shouldExpand = false
             }
@@ -305,26 +322,26 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
             // Active task running (Thinking / Working / Done)
             switch SettingsManager.shared.activeTaskDisplayMode {
             case .alwaysExpanded:
-                targetW = 380.0
-                targetDropH = 46.0
+                targetW = expW
+                targetDropH = expH
                 shouldExpand = true
             case .hoverExpands:
                 if isHovered || isClickExpanded {
-                    targetW = 380.0
-                    targetDropH = 46.0
+                    targetW = expW
+                    targetDropH = expH
                     shouldExpand = true
                 } else {
-                    targetW = 185.0
+                    targetW = compW
                     targetDropH = 2.0
                     shouldExpand = false
                 }
             case .clickOnly:
                 if isClickExpanded {
-                    targetW = 380.0
-                    targetDropH = 46.0
+                    targetW = expW
+                    targetDropH = expH
                     shouldExpand = true
                 } else {
-                    targetW = 185.0
+                    targetW = compW
                     targetDropH = 2.0
                     shouldExpand = false
                 }

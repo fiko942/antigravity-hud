@@ -7,58 +7,64 @@ public enum ActiveTaskDisplayMode: String, Codable {
     case alwaysExpanded  // Notch automatically stays expanded throughout active tasks
 }
 
-// MARK: - Centralized Persistent Settings Manager
+// MARK: - Centralized Persistent Settings Manager (Powered by SQLite3)
 public class SettingsManager {
     public static let shared = SettingsManager()
 
-    public var activeTaskDisplayMode: ActiveTaskDisplayMode = .clickOnly
+    public var activeTaskDisplayMode: ActiveTaskDisplayMode = .alwaysExpanded
     public var idleHoverExpands: Bool = true
     public var soundEnabled: Bool = true
     public var hapticsEnabled: Bool = true
     public var glitchEnabled: Bool = true
     public var launchAtLogin: Bool = true
 
+    // Custom Notch Dimensions
+    public var expandedWidth: CGFloat = 380.0
+    public var expandedHeight: CGFloat = 46.0
+    public var compactWidth: CGFloat = 185.0
+
     public var onSettingsChanged: (() -> Void)?
 
-    private let configPath: String
+    private let db = SQLiteStorageManager.shared
 
     private init() {
-        let configDir = ("~/.config/antigravity-hud" as NSString).expandingTildeInPath
-        self.configPath = (configDir as NSString).appendingPathComponent("settings.json")
         loadSettings()
     }
 
     public func loadSettings() {
-        guard let data = try? Data(contentsOf: URL(fileURLWithPath: configPath)),
-              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return }
-
-        if let modeStr = json["activeTaskDisplayMode"] as? String,
-           let mode = ActiveTaskDisplayMode(rawValue: modeStr) {
+        let modeStr = db.getString("active_task_display_mode", default: "alwaysExpanded")
+        if let mode = ActiveTaskDisplayMode(rawValue: modeStr) {
             self.activeTaskDisplayMode = mode
         }
-        if let idleHover = json["idleHoverExpands"] as? Bool { self.idleHoverExpands = idleHover }
-        if let sound = json["soundEnabled"] as? Bool { self.soundEnabled = sound }
-        if let haptics = json["hapticsEnabled"] as? Bool { self.hapticsEnabled = haptics }
-        if let glitch = json["glitchEnabled"] as? Bool { self.glitchEnabled = glitch }
-        if let launch = json["launchAtLogin"] as? Bool { self.launchAtLogin = launch }
+
+        self.idleHoverExpands = db.getBool("idle_hover_expands", default: true)
+        self.soundEnabled = db.getBool("sound_enabled", default: true)
+        self.hapticsEnabled = db.getBool("haptics_enabled", default: true)
+        self.glitchEnabled = db.getBool("glitch_enabled", default: true)
+        self.launchAtLogin = db.getBool("launch_at_login", default: true)
+
+        // Load custom dimensions with bounds validation
+        let expW = CGFloat(db.getDouble("expanded_width", default: 380.0))
+        self.expandedWidth = min(max(expW, 280.0), 560.0)
+
+        let expH = CGFloat(db.getDouble("expanded_height", default: 46.0))
+        self.expandedHeight = min(max(expH, 32.0), 80.0)
+
+        let compW = CGFloat(db.getDouble("compact_width", default: 185.0))
+        self.compactWidth = min(max(compW, 140.0), 260.0)
     }
 
     public func saveSettings() {
-        let configDir = ("~/.config/antigravity-hud" as NSString).expandingTildeInPath
-        try? FileManager.default.createDirectory(atPath: configDir, withIntermediateDirectories: true)
+        db.setString("active_task_display_mode", value: self.activeTaskDisplayMode.rawValue)
+        db.setBool("idle_hover_expands", value: self.idleHoverExpands)
+        db.setBool("sound_enabled", value: self.soundEnabled)
+        db.setBool("haptics_enabled", value: self.hapticsEnabled)
+        db.setBool("glitch_enabled", value: self.glitchEnabled)
+        db.setBool("launch_at_login", value: self.launchAtLogin)
 
-        let dict: [String: Any] = [
-            "activeTaskDisplayMode": self.activeTaskDisplayMode.rawValue,
-            "idleHoverExpands": self.idleHoverExpands,
-            "soundEnabled": self.soundEnabled,
-            "hapticsEnabled": self.hapticsEnabled,
-            "glitchEnabled": self.glitchEnabled,
-            "launchAtLogin": self.launchAtLogin
-        ]
-
-        if let data = try? JSONSerialization.data(withJSONObject: dict, options: [.prettyPrinted]) {
-            try? data.write(to: URL(fileURLWithPath: configPath))
-        }
+        db.setDouble("expanded_width", value: Double(self.expandedWidth))
+        db.setDouble("expanded_height", value: Double(self.expandedHeight))
+        db.setDouble("compact_width", value: Double(self.compactWidth))
 
         // Sync with LaunchAgent if setting changed
         if launchAtLogin {

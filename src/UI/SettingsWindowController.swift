@@ -116,8 +116,21 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
     private var pillSegmentedControl: LiquidPillSegmentedControl!
     private var containerView: NSView!
 
-    private var settingsView: NSView!
+    private var settingsScrollView: NSScrollView!
+    private var settingsContentView: NSView!
     private var aboutView: NSView!
+
+    // Preview Component
+    private var previewBox: NotchPreviewBoxView!
+    private var previewToggle: NSSegmentedControl!
+
+    // Dimension Sliders & Labels
+    private var expWidthSlider: NSSlider!
+    private var expWidthValueLabel: NSTextField!
+    private var expHeightSlider: NSSlider!
+    private var expHeightValueLabel: NSTextField!
+    private var compWidthSlider: NSSlider!
+    private var compWidthValueLabel: NSTextField!
 
     // Settings Controls
     private var activeModePopup: NSPopUpButton!
@@ -128,7 +141,7 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
     private var launchLoginCheck: NSButton!
 
     private init() {
-        let windowRect = NSRect(x: 0, y: 0, width: 520, height: 440)
+        let windowRect = NSRect(x: 0, y: 0, width: 560, height: 690)
         let window = NSWindow(
             contentRect: windowRect,
             styleMask: [.titled, .closable, .miniaturizable],
@@ -140,6 +153,7 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         window.center()
         window.titlebarAppearsTransparent = true
         window.appearance = NSAppearance(named: .darkAqua)
+        window.level = .floating
 
         super.init(window: window)
         window.delegate = self
@@ -160,10 +174,10 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         visualEffect.blendingMode = .behindWindow
         window.contentView = visualEffect
 
-        // Top Telegram-Style Liquid Pill Control
+        // Top Liquid Pill Control
         pillSegmentedControl = LiquidPillSegmentedControl(
             items: ["⚙️ Settings", "ℹ️ About"],
-            frame: NSRect(x: (520 - 240) / 2, y: 390, width: 240, height: 32)
+            frame: NSRect(x: (560 - 240) / 2, y: 640, width: 240, height: 32)
         )
         pillSegmentedControl.onSelectionChanged = { [weak self] index in
             if let tab = SettingsTab(rawValue: index) {
@@ -173,7 +187,7 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         visualEffect.addSubview(pillSegmentedControl)
 
         // Main Container View
-        containerView = NSView(frame: NSRect(x: 0, y: 0, width: 520, height: 380))
+        containerView = NSView(frame: NSRect(x: 0, y: 0, width: 560, height: 630))
         visualEffect.addSubview(containerView)
 
         buildSettingsView()
@@ -182,22 +196,105 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         showTab(.settings)
     }
 
+public class FlippedSettingsView: NSView {
+    public override var isFlipped: Bool { true }
+}
+
     // MARK: - Build Settings Tab View
     private func buildSettingsView() {
-        settingsView = NSView(frame: containerView.bounds)
+        settingsScrollView = NSScrollView(frame: containerView.bounds)
+        settingsScrollView.hasVerticalScroller = true
+        settingsScrollView.drawsBackground = false
+        settingsScrollView.autoresizingMask = [.width, .height]
 
-        var currentY: CGFloat = 330
+        let totalContentH: CGFloat = 660
+        settingsContentView = FlippedSettingsView(frame: NSRect(x: 0, y: 0, width: 560, height: totalContentH))
+        settingsScrollView.documentView = settingsContentView
 
-        // Section 1: Active Task Behavior
-        let activeHeader = makeSectionHeader(title: "Active Task Notch Behavior", y: currentY)
-        settingsView.addSubview(activeHeader)
-        currentY -= 28
+        var currentY: CGFloat = 16
 
-        let activeDesc = makeLabel(text: "Choose how the notch behaves while the AI agent is working/thinking:", y: currentY, isSub: true)
-        settingsView.addSubview(activeDesc)
-        currentY -= 32
+        // 1. Live Interactive Preview Section
+        let previewHeader = makeSectionHeader(title: "Interactive Notch Live Preview", y: currentY)
+        settingsContentView.addSubview(previewHeader)
 
-        activeModePopup = NSPopUpButton(frame: NSRect(x: 35, y: currentY, width: 440, height: 26), pullsDown: false)
+        // State Toggle [ Open / Expanded ] vs [ Closed / Compact ]
+        previewToggle = NSSegmentedControl(labels: ["📌 Open (Expanded)", "🔒 Closed (Compact)"], trackingMode: .selectOne, target: self, action: #selector(previewToggleChanged))
+        previewToggle.selectedSegment = 0
+        previewToggle.segmentStyle = .rounded
+        previewToggle.frame = NSRect(x: 230, y: currentY - 2, width: 295, height: 24)
+        settingsContentView.addSubview(previewToggle)
+        currentY += 28
+
+        previewBox = NotchPreviewBoxView(frame: NSRect(x: 35, y: currentY, width: 490, height: 100))
+        settingsContentView.addSubview(previewBox)
+        currentY += 114
+
+        // 2. Custom Notch Dimensions Section
+        let dimHeader = makeSectionHeader(title: "Custom Notch Dimensions (Width & Height)", y: currentY)
+        settingsContentView.addSubview(dimHeader)
+        currentY += 26
+
+        // Expanded Width Slider
+        let expWLabel = makeLabel(text: "Expanded Width (Active):", y: currentY, isSub: false)
+        expWLabel.frame = NSRect(x: 35, y: currentY, width: 200, height: 18)
+        settingsContentView.addSubview(expWLabel)
+
+        expWidthValueLabel = makeValueLabel(text: "380 pt", x: 450, y: currentY)
+        settingsContentView.addSubview(expWidthValueLabel)
+        currentY += 20
+
+        expWidthSlider = NSSlider(value: 380, minValue: 280, maxValue: 560, target: self, action: #selector(expandedWidthChanged))
+        expWidthSlider.frame = NSRect(x: 35, y: currentY, width: 490, height: 20)
+        settingsContentView.addSubview(expWidthSlider)
+        currentY += 26
+
+        // Expanded Height Slider
+        let expHLabel = makeLabel(text: "Expanded Drop Height:", y: currentY, isSub: false)
+        expHLabel.frame = NSRect(x: 35, y: currentY, width: 200, height: 18)
+        settingsContentView.addSubview(expHLabel)
+
+        expHeightValueLabel = makeValueLabel(text: "46 pt", x: 450, y: currentY)
+        settingsContentView.addSubview(expHeightValueLabel)
+        currentY += 20
+
+        expHeightSlider = NSSlider(value: 46, minValue: 32, maxValue: 80, target: self, action: #selector(expandedHeightChanged))
+        expHeightSlider.frame = NSRect(x: 35, y: currentY, width: 490, height: 20)
+        settingsContentView.addSubview(expHeightSlider)
+        currentY += 26
+
+        // Compact Width Slider
+        let compWLabel = makeLabel(text: "Compact Idle Width:", y: currentY, isSub: false)
+        compWLabel.frame = NSRect(x: 35, y: currentY, width: 200, height: 18)
+        settingsContentView.addSubview(compWLabel)
+
+        compWidthValueLabel = makeValueLabel(text: "185 pt", x: 450, y: currentY)
+        settingsContentView.addSubview(compWidthValueLabel)
+        currentY += 20
+
+        compWidthSlider = NSSlider(value: 185, minValue: 140, maxValue: 260, target: self, action: #selector(compactWidthChanged))
+        compWidthSlider.frame = NSRect(x: 35, y: currentY, width: 490, height: 20)
+        settingsContentView.addSubview(compWidthSlider)
+        currentY += 34
+
+        // 3. Behavior & Theme Section
+        let activeHeader = makeSectionHeader(title: "Behavior & Theme", y: currentY)
+        settingsContentView.addSubview(activeHeader)
+        currentY += 26
+
+        let themeLabel = makeLabel(text: "Active Theme & Contour:", y: currentY + 2, isSub: false)
+        themeLabel.frame = NSRect(x: 35, y: currentY, width: 170, height: 20)
+        settingsContentView.addSubview(themeLabel)
+
+        themePopup = NSPopUpButton(frame: NSRect(x: 215, y: currentY - 2, width: 310, height: 26), pullsDown: false)
+        for theme in ThemeManager.shared.availableThemes {
+            themePopup.addItem(withTitle: theme.displayName)
+        }
+        themePopup.target = self
+        themePopup.action = #selector(themeChanged)
+        settingsContentView.addSubview(themePopup)
+        currentY += 32
+
+        activeModePopup = NSPopUpButton(frame: NSRect(x: 35, y: currentY, width: 490, height: 26), pullsDown: false)
         activeModePopup.addItems(withTitles: [
             "🖱️ Click to Expand (Stay compact, expand only on click)",
             "🔍 Hover to Expand (Expands when mouse cursor enters)",
@@ -205,54 +302,38 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         ])
         activeModePopup.target = self
         activeModePopup.action = #selector(activeModeChanged)
-        settingsView.addSubview(activeModePopup)
-        currentY -= 40
-
-        // Section 2: Idle Behavior & Theme
-        let idleHeader = makeSectionHeader(title: "General & Appearance", y: currentY)
-        settingsView.addSubview(idleHeader)
-        currentY -= 30
+        settingsContentView.addSubview(activeModePopup)
+        currentY += 32
 
         idleHoverCheck = makeCheckbox(title: "Expand notch drop-down on hover when Idle", y: currentY, action: #selector(idleHoverChanged))
-        settingsView.addSubview(idleHoverCheck)
-        currentY -= 32
+        settingsContentView.addSubview(idleHoverCheck)
+        currentY += 34
 
-        let themeLabel = makeLabel(text: "Active Theme & Shape:", y: currentY + 2, isSub: false)
-        themeLabel.frame = NSRect(x: 35, y: currentY, width: 160, height: 20)
-        settingsView.addSubview(themeLabel)
-
-        themePopup = NSPopUpButton(frame: NSRect(x: 200, y: currentY - 2, width: 275, height: 26), pullsDown: false)
-        for theme in ThemeManager.shared.availableThemes {
-            themePopup.addItem(withTitle: theme.displayName)
-        }
-        themePopup.target = self
-        themePopup.action = #selector(themeChanged)
-        settingsView.addSubview(themePopup)
-        currentY -= 40
-
-        // Section 3: Sensory & Launch
+        // 4. Sensory & Automation Section
         let sensoryHeader = makeSectionHeader(title: "Sensory & Automation", y: currentY)
-        settingsView.addSubview(sensoryHeader)
-        currentY -= 30
+        settingsContentView.addSubview(sensoryHeader)
+        currentY += 26
 
         soundCheck = makeCheckbox(title: "Play audio chime on task completion", y: currentY, action: #selector(soundChanged))
-        settingsView.addSubview(soundCheck)
-        currentY -= 26
+        settingsContentView.addSubview(soundCheck)
+        currentY += 24
 
         hapticCheck = makeCheckbox(title: "Enable trackpad haptic feedback on state changes", y: currentY, action: #selector(hapticChanged))
-        settingsView.addSubview(hapticCheck)
-        currentY -= 26
+        settingsContentView.addSubview(hapticCheck)
+        currentY += 24
 
         launchLoginCheck = makeCheckbox(title: "Launch Antigravity HUD automatically at login", y: currentY, action: #selector(launchLoginChanged))
-        settingsView.addSubview(launchLoginCheck)
+        settingsContentView.addSubview(launchLoginCheck)
     }
 
     // MARK: - Build About Tab View
     private func buildAboutView() {
-        aboutView = NSView(frame: containerView.bounds)
+        aboutView = FlippedSettingsView(frame: containerView.bounds)
+
+        var curY: CGFloat = 24
 
         // App Icon
-        let iconImageView = NSImageView(frame: NSRect(x: (520 - 72) / 2, y: 270, width: 72, height: 72))
+        let iconImageView = NSImageView(frame: NSRect(x: (560 - 72) / 2, y: curY, width: 72, height: 72))
         if let iconPath = Bundle.main.path(forResource: "AppIcon", ofType: "icns"),
            let appIcon = NSImage(contentsOfFile: iconPath) {
             iconImageView.image = appIcon
@@ -260,30 +341,34 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
             iconImageView.image = img
         }
         aboutView.addSubview(iconImageView)
+        curY += 80
 
         // Title
         let titleLabel = NSTextField(labelWithString: "Antigravity HUD")
-        titleLabel.font = NSFont.systemFont(ofSize: 20, weight: .heavy)
+        titleLabel.font = NSFont.systemFont(ofSize: 21, weight: .heavy)
         titleLabel.alignment = .center
-        titleLabel.frame = NSRect(x: 0, y: 232, width: 520, height: 26)
+        titleLabel.frame = NSRect(x: 0, y: curY, width: 560, height: 26)
         aboutView.addSubview(titleLabel)
+        curY += 28
 
         // Version
         let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.1.0"
-        let versionLabel = NSTextField(labelWithString: "Version \(appVersion) (Modular AppKit Build)")
-        versionLabel.font = NSFont.monospacedSystemFont(ofSize: 11, weight: .medium)
+        let versionLabel = NSTextField(labelWithString: "Version \(appVersion) (Powered by SQLite3 Engine)")
+        versionLabel.font = NSFont.monospacedSystemFont(ofSize: 11, weight: .semibold)
         versionLabel.textColor = NSColor(red: 0.0, green: 0.88, blue: 0.45, alpha: 1.0)
         versionLabel.alignment = .center
-        versionLabel.frame = NSRect(x: 0, y: 210, width: 520, height: 18)
+        versionLabel.frame = NSRect(x: 0, y: curY, width: 560, height: 18)
         aboutView.addSubview(versionLabel)
+        curY += 26
 
         // Description
-        let descLabel = NSTextField(wrappingLabelWithString: "Native macOS Dynamic Notch Island interface for the Google Antigravity AI Agent. Real-time streaming status, dynamic geometry shapes, and high-performance AppKit HUD.")
+        let descLabel = NSTextField(wrappingLabelWithString: "Native macOS Dynamic Notch Island interface for Google Antigravity AI Agent.\nReal-time streaming status, atomic SQLite3 persistence, custom notch dimensions,\nand multi-theme adaptive AppKit HUD.")
         descLabel.font = NSFont.systemFont(ofSize: 12, weight: .regular)
         descLabel.textColor = .secondaryLabelColor
         descLabel.alignment = .center
-        descLabel.frame = NSRect(x: 50, y: 135, width: 420, height: 55)
+        descLabel.frame = NSRect(x: 40, y: curY, width: 480, height: 55)
         aboutView.addSubview(descLabel)
+        curY += 60
 
         // Author credits & Portfolio Link
         let authorButton = NSButton(
@@ -292,35 +377,67 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
             action: #selector(openPortfolio)
         )
         authorButton.isBordered = false
-        authorButton.font = NSFont.systemFont(ofSize: 12, weight: .semibold)
+        authorButton.font = NSFont.systemFont(ofSize: 12.5, weight: .bold)
         authorButton.contentTintColor = NSColor(red: 0.0, green: 0.88, blue: 0.45, alpha: 1.0)
-        authorButton.frame = NSRect(x: 0, y: 95, width: 520, height: 20)
+        authorButton.frame = NSRect(x: 0, y: curY, width: 560, height: 20)
         aboutView.addSubview(authorButton)
+        curY += 32
 
         // Action Buttons: Portfolio, GitHub, & Donate Saweria
         let btnW: CGFloat = 145
         let spacing: CGFloat = 10
         let totalW = (btnW * 3) + (spacing * 2)
-        let startX = (520 - totalW) / 2
+        let startX = (560 - totalW) / 2
 
         let portfolioBtn = NSButton(title: "🌐 Portfolio ↗", target: self, action: #selector(openPortfolio))
         portfolioBtn.bezelStyle = .rounded
         portfolioBtn.font = NSFont.systemFont(ofSize: 11.5, weight: .medium)
-        portfolioBtn.frame = NSRect(x: startX, y: 45, width: btnW, height: 32)
+        portfolioBtn.frame = NSRect(x: startX, y: curY, width: btnW, height: 32)
         aboutView.addSubview(portfolioBtn)
 
         let githubBtn = NSButton(title: "🐙 GitHub ↗", target: self, action: #selector(openGitHub))
         githubBtn.bezelStyle = .rounded
         githubBtn.font = NSFont.systemFont(ofSize: 11.5, weight: .medium)
-        githubBtn.frame = NSRect(x: startX + btnW + spacing, y: 45, width: btnW, height: 32)
+        githubBtn.frame = NSRect(x: startX + btnW + spacing, y: curY, width: btnW, height: 32)
         aboutView.addSubview(githubBtn)
 
         let donateBtn = NSButton(title: "☕ Donate ↗", target: self, action: #selector(openSaweria))
         donateBtn.bezelStyle = .rounded
         donateBtn.font = NSFont.systemFont(ofSize: 11.5, weight: .bold)
         donateBtn.contentTintColor = NSColor(red: 1.0, green: 0.65, blue: 0.0, alpha: 1.0)
-        donateBtn.frame = NSRect(x: startX + (btnW + spacing) * 2, y: 45, width: btnW, height: 32)
+        donateBtn.frame = NSRect(x: startX + (btnW + spacing) * 2, y: curY, width: btnW, height: 32)
         aboutView.addSubview(donateBtn)
+        curY += 48
+
+        let possiblePaths = [
+            Bundle.main.path(forResource: "saweria-qr", ofType: "png"),
+            "/Applications/AntigravityHUD.app/Contents/Resources/saweria-qr.png",
+            "resources/saweria-qr.png",
+            "Resources/saweria-qr.png"
+        ].compactMap { $0 }
+
+        if let qrPath = possiblePaths.first(where: { FileManager.default.fileExists(atPath: $0) }),
+           let qrImage = NSImage(contentsOfFile: qrPath) {
+            let qrContainer = NSView(frame: NSRect(x: (560 - 150) / 2, y: curY, width: 150, height: 160))
+            qrContainer.wantsLayer = true
+            qrContainer.layer?.backgroundColor = NSColor(white: 0.15, alpha: 0.8).cgColor
+            qrContainer.layer?.cornerRadius = 12
+            qrContainer.layer?.borderColor = NSColor(white: 1.0, alpha: 0.12).cgColor
+            qrContainer.layer?.borderWidth = 1.0
+
+            let qrView = NSImageView(frame: NSRect(x: 15, y: 30, width: 120, height: 120))
+            qrView.image = qrImage
+            qrContainer.addSubview(qrView)
+
+            let scanLabel = NSTextField(labelWithString: "Scan QR to Donate")
+            scanLabel.font = NSFont.systemFont(ofSize: 10, weight: .semibold)
+            scanLabel.textColor = NSColor(white: 0.75, alpha: 1.0)
+            scanLabel.alignment = .center
+            scanLabel.frame = NSRect(x: 0, y: 8, width: 150, height: 16)
+            qrContainer.addSubview(scanLabel)
+
+            aboutView.addSubview(qrContainer)
+        }
     }
 
     // MARK: - Actions & Sync
@@ -336,7 +453,7 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         containerView.subviews.forEach { $0.removeFromSuperview() }
         switch tab {
         case .settings:
-            containerView.addSubview(settingsView)
+            containerView.addSubview(settingsScrollView)
             window?.title = "Antigravity HUD Preferences"
         case .about:
             containerView.addSubview(aboutView)
@@ -359,10 +476,59 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         hapticCheck.state = s.hapticsEnabled ? .on : .off
         launchLoginCheck.state = s.launchAtLogin ? .on : .off
 
+        // Dimensions
+        expWidthSlider.doubleValue = Double(s.expandedWidth)
+        expWidthValueLabel.stringValue = "\(Int(s.expandedWidth)) pt"
+
+        expHeightSlider.doubleValue = Double(s.expandedHeight)
+        expHeightValueLabel.stringValue = "\(Int(s.expandedHeight)) pt"
+
+        compWidthSlider.doubleValue = Double(s.compactWidth)
+        compWidthValueLabel.stringValue = "\(Int(s.compactWidth)) pt"
+
+        // Update preview canvas
+        previewBox.previewExpandedWidth = s.expandedWidth
+        previewBox.previewExpandedHeight = s.expandedHeight
+        previewBox.previewCompactWidth = s.compactWidth
+        previewBox.updatePreview()
+
         let currentThemeId = ThemeManager.shared.activeThemeId
         if let idx = ThemeManager.shared.availableThemes.firstIndex(where: { $0.id == currentThemeId }) {
             themePopup.selectItem(at: idx)
         }
+    }
+
+    // MARK: - Dimension Sliders Action Handlers
+    @objc private func expandedWidthChanged() {
+        let val = CGFloat(expWidthSlider.doubleValue)
+        expWidthValueLabel.stringValue = "\(Int(val)) pt"
+        previewBox.previewExpandedWidth = val
+
+        SettingsManager.shared.expandedWidth = val
+        SettingsManager.shared.saveSettings()
+    }
+
+    @objc private func expandedHeightChanged() {
+        let val = CGFloat(expHeightSlider.doubleValue)
+        expHeightValueLabel.stringValue = "\(Int(val)) pt"
+        previewBox.previewExpandedHeight = val
+
+        SettingsManager.shared.expandedHeight = val
+        SettingsManager.shared.saveSettings()
+    }
+
+    @objc private func compactWidthChanged() {
+        let val = CGFloat(compWidthSlider.doubleValue)
+        compWidthValueLabel.stringValue = "\(Int(val)) pt"
+        previewBox.previewCompactWidth = val
+
+        SettingsManager.shared.compactWidth = val
+        SettingsManager.shared.saveSettings()
+    }
+
+    @objc private func previewToggleChanged() {
+        previewBox.isExpandedPreview = (previewToggle.selectedSegment == 0)
+        SensoryManager.shared.triggerHaptic(pattern: .generic)
     }
 
     @objc private func activeModeChanged() {
@@ -385,6 +551,7 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         if idx >= 0 && idx < ThemeManager.shared.availableThemes.count {
             let selected = ThemeManager.shared.availableThemes[idx]
             ThemeManager.shared.setTheme(withId: selected.id)
+            previewBox.updatePreview()
         }
     }
 
@@ -426,7 +593,7 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         let label = NSTextField(labelWithString: title)
         label.font = NSFont.systemFont(ofSize: 13, weight: .bold)
         label.textColor = .labelColor
-        label.frame = NSRect(x: 35, y: y, width: 440, height: 18)
+        label.frame = NSRect(x: 35, y: y, width: 490, height: 18)
         return label
     }
 
@@ -434,14 +601,23 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         let label = NSTextField(labelWithString: text)
         label.font = NSFont.systemFont(ofSize: isSub ? 11 : 12.5, weight: isSub ? .regular : .medium)
         label.textColor = isSub ? .secondaryLabelColor : .labelColor
-        label.frame = NSRect(x: 35, y: y, width: 440, height: 18)
+        label.frame = NSRect(x: 35, y: y, width: 490, height: 18)
+        return label
+    }
+
+    private func makeValueLabel(text: String, x: CGFloat, y: CGFloat) -> NSTextField {
+        let label = NSTextField(labelWithString: text)
+        label.font = NSFont.monospacedSystemFont(ofSize: 12, weight: .bold)
+        label.textColor = NSColor(red: 0.0, green: 0.88, blue: 0.45, alpha: 1.0)
+        label.alignment = .right
+        label.frame = NSRect(x: x, y: y, width: 75, height: 18)
         return label
     }
 
     private func makeCheckbox(title: String, y: CGFloat, action: Selector) -> NSButton {
         let btn = NSButton(checkboxWithTitle: title, target: self, action: action)
         btn.font = NSFont.systemFont(ofSize: 12.5, weight: .regular)
-        btn.frame = NSRect(x: 35, y: y, width: 440, height: 20)
+        btn.frame = NSRect(x: 35, y: y, width: 490, height: 20)
         return btn
     }
 }

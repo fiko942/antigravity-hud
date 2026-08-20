@@ -20,10 +20,10 @@ SWIFT_FILES=$(find "${SCRIPT_DIR}/src" -name "*.swift" | sort)
 swiftc -O ${SWIFT_FILES} \
     -o "${APP_DIR}/Contents/MacOS/AntigravityHUD"
 
-echo "==> Copying App metadata and icon..."
+echo "==> Copying App metadata and resources..."
 cp "${SCRIPT_DIR}/Resources/Info.plist" "${APP_DIR}/Contents/Info.plist"
-if [ -f "${SCRIPT_DIR}/Resources/AppIcon.icns" ]; then
-    cp "${SCRIPT_DIR}/Resources/AppIcon.icns" "${APP_DIR}/Contents/Resources/AppIcon.icns"
+if [ -d "${SCRIPT_DIR}/Resources" ]; then
+    cp -R "${SCRIPT_DIR}/Resources/"* "${APP_DIR}/Contents/Resources/" 2>/dev/null || true
 fi
 
 echo "==> Preparing DMG staging..."
