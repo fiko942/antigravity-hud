@@ -122,25 +122,23 @@ public class NotchPreviewBoxView: NSView {
         glowShapeLayer.fillColor = NSColor.clear.cgColor
         beaconLayer.backgroundColor = color.cgColor
 
-        // Header & Detail Text
-        let headerFont = theme.makeHeaderFont(size: 8.5)
-        let detailFont = theme.makeDetailFont(size: 10.5)
-
-        headerTextLayer.font = headerFont
-        headerTextLayer.fontSize = 8.5
-        headerTextLayer.foregroundColor = color.cgColor
-
-        detailTextLayer.font = detailFont
-        detailTextLayer.fontSize = 10.5
+        // Header & Detail Text with Custom Attributed Kerning
+        let headerString: String
+        let detailString: String
+        let detailTextColor: NSColor
 
         if theme.id == "matrix" {
-            headerTextLayer.string = "> SYS://AGY.KERNEL [WORKING]"
-            detailTextLayer.string = "> Running command █"
-            detailTextLayer.foregroundColor = NSColor(red: 0.8, green: 1.0, blue: 0.85, alpha: 1.0).cgColor
+            headerString = "> SYS://AGY.KERNEL [WORKING]"
+            detailString = "> Running command █"
+            detailTextColor = NSColor(red: 0.8, green: 1.0, blue: 0.85, alpha: 1.0)
         } else {
-            headerTextLayer.string = "ANTIGRAVITY • WORKING"
-            detailTextLayer.string = "Editing SQLiteStorageManager.swift"
+            headerString = "ANTIGRAVITY • WORKING"
+            detailString = "Editing SQLiteStorageManager.swift"
+            detailTextColor = isLight ? NSColor(red: 0.12, green: 0.12, blue: 0.14, alpha: 1.0) : .white
         }
+
+        headerTextLayer.string = theme.makeAttributedHeader(text: headerString, color: color, size: 8.5)
+        detailTextLayer.string = theme.makeAttributedDetail(text: detailString, color: detailTextColor, size: 10.5)
 
         // Equalizer Bars
         for (i, bar) in eqBars.enumerated() {

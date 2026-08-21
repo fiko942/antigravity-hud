@@ -44,6 +44,8 @@ public struct ThemeDefinition {
     public var isLightMode: Bool
     public var headerFontName: String?
     public var detailFontName: String?
+    public var headerKerning: CGFloat
+    public var detailKerning: CGFloat
     public var palette: ThemePalette
 
     public init(
@@ -56,6 +58,8 @@ public struct ThemeDefinition {
         isLightMode: Bool = false,
         headerFontName: String? = nil,
         detailFontName: String? = nil,
+        headerKerning: CGFloat = 0.0,
+        detailKerning: CGFloat = 0.0,
         palette: ThemePalette
     ) {
         self.id = id
@@ -67,44 +71,126 @@ public struct ThemeDefinition {
         self.isLightMode = isLightMode
         self.headerFontName = headerFontName
         self.detailFontName = detailFontName
+        self.headerKerning = headerKerning
+        self.detailKerning = detailKerning
         self.palette = palette
     }
 
     public func makeHeaderFont(size: CGFloat = 9.0) -> NSFont {
-        if let name = headerFontName, let customFont = NSFont(name: name, size: size) {
-            return customFont
-        }
         if id == "fineline" {
-            return NSFont(name: "Optima-Bold", size: size) ?? NSFont(name: "Optima-ExtraBlack", size: size) ?? NSFont.systemFont(ofSize: size, weight: .bold)
+            return FontManager.shared.resolveFont(
+                preferredName: headerFontName ?? "Optima-Bold",
+                fallbackNames: ["Optima-ExtraBlack", "Optima-Regular", "Cinzel-Bold", "Didot-Bold"],
+                size: size,
+                defaultWeight: .bold
+            )
         } else if id == "matrix" {
-            return NSFont(name: "Menlo-Bold", size: size) ?? NSFont.monospacedSystemFont(ofSize: size, weight: .bold)
+            return FontManager.shared.resolveFont(
+                preferredName: headerFontName ?? "Menlo-Bold",
+                fallbackNames: ["Menlo", "CourierNewPS-BoldMT", "Monaco"],
+                size: size,
+                defaultWeight: .bold
+            )
         } else if id == "cyberpunk" {
-            return NSFont(name: "HelveticaNeue-CondensedBlack", size: size + 1.0) ?? NSFont(name: "Avenir-Black", size: size) ?? NSFont.systemFont(ofSize: size, weight: .black)
+            return FontManager.shared.resolveFont(
+                preferredName: headerFontName ?? "HelveticaNeue-CondensedBlack",
+                fallbackNames: ["Avenir-Black", "Impact", "Arial-Black"],
+                size: size + 1.0,
+                defaultWeight: .black
+            )
         } else if id == "sunset" {
-            return NSFont(name: "Futura-Bold", size: size + 0.5) ?? NSFont.systemFont(ofSize: size, weight: .heavy)
+            return FontManager.shared.resolveFont(
+                preferredName: headerFontName ?? "Futura-Bold",
+                fallbackNames: ["Futura-Medium", "Avenir-Heavy"],
+                size: size + 0.5,
+                defaultWeight: .heavy
+            )
         } else if id == "dracula" {
-            return NSFont(name: "Didot-Bold", size: size + 1.0) ?? NSFont(name: "Baskerville-Bold", size: size + 0.5) ?? NSFont.systemFont(ofSize: size, weight: .bold)
+            return FontManager.shared.resolveFont(
+                preferredName: headerFontName ?? "Didot-Bold",
+                fallbackNames: ["Baskerville-Bold", "Georgia-Bold"],
+                size: size + 1.0,
+                defaultWeight: .bold
+            )
         }
         // macOS Classic (Ventura)
-        return NSFont.systemFont(ofSize: size, weight: .bold)
+        return FontManager.shared.resolveFont(
+            preferredName: headerFontName,
+            fallbackNames: [],
+            size: size,
+            defaultWeight: .bold
+        )
     }
 
     public func makeDetailFont(size: CGFloat = 11.5) -> NSFont {
-        if let name = detailFontName, let customFont = NSFont(name: name, size: size) {
-            return customFont
-        }
         if id == "fineline" {
-            return NSFont(name: "Avenir-Light", size: size) ?? NSFont(name: "Avenir-Book", size: size) ?? NSFont.systemFont(ofSize: size, weight: .light)
+            return FontManager.shared.resolveFont(
+                preferredName: detailFontName ?? "Avenir-Light",
+                fallbackNames: ["Avenir-Book", "Optima-Regular", "HelveticaNeue-Light"],
+                size: size,
+                defaultWeight: .light
+            )
         } else if id == "matrix" {
-            return NSFont(name: "Menlo-Bold", size: size - 0.5) ?? NSFont.monospacedSystemFont(ofSize: size, weight: .bold)
+            return FontManager.shared.resolveFont(
+                preferredName: detailFontName ?? "Menlo-Bold",
+                fallbackNames: ["Menlo", "CourierNewPS-BoldMT"],
+                size: size - 0.5,
+                defaultWeight: .bold
+            )
         } else if id == "cyberpunk" {
-            return NSFont(name: "Avenir-Black", size: size) ?? NSFont.systemFont(ofSize: size, weight: .heavy)
+            return FontManager.shared.resolveFont(
+                preferredName: detailFontName ?? "Avenir-Black",
+                fallbackNames: ["HelveticaNeue-Bold", "Arial-BoldMT"],
+                size: size,
+                defaultWeight: .heavy
+            )
         } else if id == "sunset" {
-            return NSFont(name: "Futura-Medium", size: size) ?? NSFont.systemFont(ofSize: size, weight: .semibold)
+            return FontManager.shared.resolveFont(
+                preferredName: detailFontName ?? "Futura-Medium",
+                fallbackNames: ["Futura", "Avenir-Medium"],
+                size: size,
+                defaultWeight: .semibold
+            )
         } else if id == "dracula" {
-            return NSFont(name: "Palatino-Bold", size: size) ?? NSFont(name: "Georgia-Bold", size: size) ?? NSFont.systemFont(ofSize: size, weight: .semibold)
+            return FontManager.shared.resolveFont(
+                preferredName: detailFontName ?? "Palatino-Bold",
+                fallbackNames: ["Georgia-Bold", "Baskerville-SemiBold"],
+                size: size,
+                defaultWeight: .semibold
+            )
         }
         // macOS Classic (Ventura)
-        return NSFont.systemFont(ofSize: size, weight: .semibold)
+        return FontManager.shared.resolveFont(
+            preferredName: detailFontName,
+            fallbackNames: [],
+            size: size,
+            defaultWeight: .semibold
+        )
+    }
+
+    /// Creates an attributed string with theme-specific font, kerning (letter-spacing), and color
+    public func makeAttributedHeader(text: String, color: NSColor, size: CGFloat = 9.0) -> NSAttributedString {
+        let font = makeHeaderFont(size: size)
+        var attrs: [NSAttributedString.Key: Any] = [
+            .font: font,
+            .foregroundColor: color
+        ]
+        if headerKerning != 0.0 {
+            attrs[.kern] = headerKerning
+        }
+        return NSAttributedString(string: text, attributes: attrs)
+    }
+
+    /// Creates an attributed string for detail text with theme-specific typography and kerning
+    public func makeAttributedDetail(text: String, color: NSColor, size: CGFloat = 11.5) -> NSAttributedString {
+        let font = makeDetailFont(size: size)
+        var attrs: [NSAttributedString.Key: Any] = [
+            .font: font,
+            .foregroundColor: color
+        ]
+        if detailKerning != 0.0 {
+            attrs[.kern] = detailKerning
+        }
+        return NSAttributedString(string: text, attributes: attrs)
     }
 }

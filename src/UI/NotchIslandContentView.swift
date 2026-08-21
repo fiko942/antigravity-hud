@@ -583,21 +583,16 @@ public class NotchIslandContentView: NSView {
             self.beaconLayer.shadowColor = color.cgColor
             self.beaconPulseLayer.backgroundColor = color.withAlphaComponent(isLight ? 0.35 : 0.25).cgColor
 
-            // Distinct Fonts for Every Theme
-            self.headerLabel.font = currentTheme.makeHeaderFont(size: 9.0)
-            self.detailLabel.font = currentTheme.makeDetailFont(size: 11.5)
-
             // Typography & Headers
+            let headerText: String
             if isMatrix {
-                self.detailLabel.textColor = NSColor(red: 0.8, green: 1.0, blue: 0.85, alpha: 1.0)
                 let stateTag = self.currentActivity.state.uppercased()
-                self.headerLabel.stringValue = "> SYS://AGY.KERNEL [\(stateTag)]"
+                headerText = "> SYS://AGY.KERNEL [\(stateTag)]"
             } else {
-                self.detailLabel.textColor = isLight ? NSColor(red: 0.12, green: 0.12, blue: 0.14, alpha: 1.0) : .white
-                self.headerLabel.stringValue = self.currentActivity.header
+                headerText = self.currentActivity.header
             }
 
-            self.headerLabel.textColor = color
+            self.headerLabel.attributedStringValue = currentTheme.makeAttributedHeader(text: headerText, color: color, size: 9.0)
             self.configureBeaconAnimation(for: currentTheme, color: color)
 
             // Text Decrypt / Scramble Animation for Matrix Theme
@@ -607,7 +602,8 @@ public class NotchIslandContentView: NSView {
                 }
             } else {
                 self.stopMatrixTextAnimations()
-                self.detailLabel.stringValue = self.currentActivity.detail
+                let detailColor = isLight ? NSColor(red: 0.12, green: 0.12, blue: 0.14, alpha: 1.0) : .white
+                self.detailLabel.attributedStringValue = currentTheme.makeAttributedDetail(text: self.currentActivity.detail, color: detailColor, size: 11.5)
             }
 
             if isLight {
@@ -678,7 +674,8 @@ public class NotchIslandContentView: NSView {
                 }
             }
 
-            self.detailLabel.stringValue = "> " + result + " █"
+            let matrixColor = NSColor(red: 0.8, green: 1.0, blue: 0.85, alpha: 1.0)
+            self.detailLabel.attributedStringValue = ThemeManager.shared.currentTheme.makeAttributedDetail(text: "> " + result + " █", color: matrixColor, size: 11.5)
 
             if currentStep >= totalSteps {
                 timer.invalidate()
@@ -691,13 +688,15 @@ public class NotchIslandContentView: NSView {
     private func startBlinkingCursor() {
         cursorTimer?.invalidate()
         cursorVisible = true
-        self.detailLabel.stringValue = "> " + self.currentDisplayTargetText + " █"
+        let matrixColor = NSColor(red: 0.8, green: 1.0, blue: 0.85, alpha: 1.0)
+        self.detailLabel.attributedStringValue = ThemeManager.shared.currentTheme.makeAttributedDetail(text: "> " + self.currentDisplayTargetText + " █", color: matrixColor, size: 11.5)
 
         cursorTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
             guard let self = self, ThemeManager.shared.currentTheme.id == "matrix" else { return }
             self.cursorVisible.toggle()
             let cursor = self.cursorVisible ? " █" : ""
-            self.detailLabel.stringValue = "> " + self.currentDisplayTargetText + cursor
+            let matrixColor = NSColor(red: 0.8, green: 1.0, blue: 0.85, alpha: 1.0)
+            self.detailLabel.attributedStringValue = ThemeManager.shared.currentTheme.makeAttributedDetail(text: "> " + self.currentDisplayTargetText + cursor, color: matrixColor, size: 11.5)
         }
     }
 
