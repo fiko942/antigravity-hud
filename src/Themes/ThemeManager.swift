@@ -106,6 +106,23 @@ public class ThemeManager {
                 working: NSColor(red: 0.55, green: 0.91, blue: 0.99, alpha: 1.0),   // #8BE9FD Ghost Cyan
                 done: NSColor(red: 0.31, green: 0.98, blue: 0.48, alpha: 1.0)      // #50FA7B Vampire Mint
             )
+        ),
+        ThemeDefinition(
+            id: "fineline",
+            displayName: "Fineline Dark (Celestial Ink)",
+            shapeType: .finelineConstellation,
+            beaconStyle: .finelineCelestialOrbit,
+            hasGlitchEffect: false,
+            hasMatrixRain: false,
+            isLightMode: false,
+            headerFontName: "Optima-Bold",
+            detailFontName: "Avenir-Light",
+            palette: ThemePalette(
+                idle: NSColor(red: 0.94, green: 0.93, blue: 0.91, alpha: 1.0),      // #F0EFEA Pearl White / Ivory Ink
+                thinking: NSColor(red: 0.65, green: 0.55, blue: 0.98, alpha: 1.0),  // #A78BFA Mystic Nebula Lavender
+                working: NSColor(red: 0.22, green: 0.74, blue: 0.97, alpha: 1.0),   // #38BDF8 Celestial North Star Cyan
+                done: NSColor(red: 0.98, green: 0.75, blue: 0.14, alpha: 1.0)       // #FBBF24 Aurora Star Gold
+            )
         )
     ]
 

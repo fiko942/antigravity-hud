@@ -2,11 +2,12 @@ import Cocoa
 
 // MARK: - Notch Geometry Shape Style
 public enum ThemeShapeType: String {
-    case rounded        // Classic smooth Apple-style curves (macOS 13 Ventura)
-    case cyberpunkCut   // Sci-fi 45-degree angular mecha chamfers with RGB glitch
-    case matrixBracket  // Terminal box with digital bracket crosshairs [ ]
-    case sunsetPill     // Retro synthwave smooth pill with sunset glow
-    case draculaGothic  // Gothic stepped bevel with royal violet & blood-red glow
+    case rounded                // Classic smooth Apple-style curves (macOS 13 Ventura)
+    case cyberpunkCut           // Sci-fi 45-degree angular mecha chamfers with RGB glitch
+    case matrixBracket          // Terminal box with digital bracket crosshairs [ ]
+    case sunsetPill             // Retro synthwave smooth pill with sunset glow
+    case draculaGothic          // Gothic stepped bevel with royal violet & blood-red glow
+    case finelineConstellation  // Minimalist single-needle tattoo 1.0pt hairline with celestial star dots
 }
 
 // MARK: - Unique Theme Beacon Animation Style
@@ -16,6 +17,7 @@ public enum ThemeBeaconStyle: String {
     case matrixTerminalBlock    // Square terminal cursor binary blink
     case synthwaveHorizonHalo   // 80s Neon expanding horizon rings
     case draculaGothicHeartbeat // Floating eerie vampire double-pulse heartbeat
+    case finelineCelestialOrbit // Delicate single-needle micro star with expanding concentric orbital ripples
 }
 
 public struct ThemePalette {
@@ -72,7 +74,9 @@ public struct ThemeDefinition {
         if let name = headerFontName, let customFont = NSFont(name: name, size: size) {
             return customFont
         }
-        if id == "matrix" {
+        if id == "fineline" {
+            return NSFont(name: "Optima-Bold", size: size) ?? NSFont(name: "Optima-ExtraBlack", size: size) ?? NSFont.systemFont(ofSize: size, weight: .bold)
+        } else if id == "matrix" {
             return NSFont(name: "Menlo-Bold", size: size) ?? NSFont.monospacedSystemFont(ofSize: size, weight: .bold)
         } else if id == "cyberpunk" {
             return NSFont(name: "HelveticaNeue-CondensedBlack", size: size + 1.0) ?? NSFont(name: "Avenir-Black", size: size) ?? NSFont.systemFont(ofSize: size, weight: .black)
@@ -89,7 +93,9 @@ public struct ThemeDefinition {
         if let name = detailFontName, let customFont = NSFont(name: name, size: size) {
             return customFont
         }
-        if id == "matrix" {
+        if id == "fineline" {
+            return NSFont(name: "Avenir-Light", size: size) ?? NSFont(name: "Avenir-Book", size: size) ?? NSFont.systemFont(ofSize: size, weight: .light)
+        } else if id == "matrix" {
             return NSFont(name: "Menlo-Bold", size: size - 0.5) ?? NSFont.monospacedSystemFont(ofSize: size, weight: .bold)
         } else if id == "cyberpunk" {
             return NSFont(name: "Avenir-Black", size: size) ?? NSFont.systemFont(ofSize: size, weight: .heavy)

@@ -107,6 +107,11 @@ public class NotchPreviewBoxView: NSView {
             glowShapeLayer.strokeColor = NSColor(white: 0.0, alpha: 0.2).cgColor
             glowShapeLayer.lineWidth = 1.2
             detailTextLayer.foregroundColor = NSColor(red: 0.12, green: 0.12, blue: 0.14, alpha: 1.0).cgColor
+        } else if theme.shapeType == .finelineConstellation {
+            notchShapeLayer.fillColor = NSColor(red: 0.04, green: 0.04, blue: 0.05, alpha: 1.0).cgColor
+            glowShapeLayer.strokeColor = color.withAlphaComponent(0.95).cgColor
+            glowShapeLayer.lineWidth = 1.0
+            detailTextLayer.foregroundColor = NSColor(red: 0.94, green: 0.93, blue: 0.91, alpha: 1.0).cgColor
         } else {
             notchShapeLayer.fillColor = NSColor.black.cgColor
             glowShapeLayer.strokeColor = color.withAlphaComponent(0.85).cgColor
@@ -180,6 +185,21 @@ public class NotchPreviewBoxView: NSView {
 
         // Geometry contour
         switch theme.shapeType {
+        case .finelineConstellation:
+            let rad: CGFloat = isExpandedPreview ? 14.0 : 6.0
+            path.move(to: NSPoint(x: startX, y: 0))
+            path.line(to: NSPoint(x: startX + targetW, y: 0))
+            path.line(to: NSPoint(x: startX + targetW, y: targetH - rad))
+            path.appendArc(withCenter: NSPoint(x: startX + targetW - rad, y: targetH - rad), radius: rad, startAngle: 0, endAngle: 90, clockwise: false)
+            path.line(to: NSPoint(x: startX + rad, y: targetH))
+            path.appendArc(withCenter: NSPoint(x: startX + rad, y: targetH - rad), radius: rad, startAngle: 90, endAngle: 180, clockwise: false)
+            path.close()
+
+            glowPath.move(to: NSPoint(x: startX, y: targetH - rad))
+            glowPath.appendArc(withCenter: NSPoint(x: startX + rad, y: targetH - rad), radius: rad, startAngle: 180, endAngle: 90, clockwise: true)
+            glowPath.line(to: NSPoint(x: startX + targetW - rad, y: targetH))
+            glowPath.appendArc(withCenter: NSPoint(x: startX + targetW - rad, y: targetH - rad), radius: rad, startAngle: 90, endAngle: 0, clockwise: true)
+
         case .cyberpunkCut:
             let chamfer: CGFloat = isExpandedPreview ? 10.0 : 4.0
             path.move(to: NSPoint(x: startX, y: 0))

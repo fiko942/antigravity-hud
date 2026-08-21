@@ -258,6 +258,29 @@ public class NotchIslandContentView: NSView {
                 glowPath.line(to: NSPoint(x: w - 10, y: h - 1.5))
             }
 
+        case .finelineConstellation:
+            // Fineline Dark: Ultra-crisp 1.0pt single-needle hairline contour with celestial star dots
+            let cornerRadius: CGFloat = isExpandedMode ? 16.0 : 7.0
+            path.move(to: NSPoint(x: 0, y: 0))
+            path.line(to: NSPoint(x: w, y: 0))
+            path.line(to: NSPoint(x: w, y: h - cornerRadius))
+            path.appendArc(withCenter: NSPoint(x: w - cornerRadius, y: h - cornerRadius), radius: cornerRadius, startAngle: 0, endAngle: 90, clockwise: false)
+            path.line(to: NSPoint(x: cornerRadius, y: h))
+            path.appendArc(withCenter: NSPoint(x: cornerRadius, y: h - cornerRadius), radius: cornerRadius, startAngle: 90, endAngle: 180, clockwise: false)
+            path.close()
+
+            if isExpandedMode {
+                glowPath.move(to: NSPoint(x: 0, y: max(0, h - cornerRadius - 4)))
+                glowPath.line(to: NSPoint(x: 0, y: h - cornerRadius))
+                glowPath.appendArc(withCenter: NSPoint(x: cornerRadius, y: h - cornerRadius), radius: cornerRadius, startAngle: 180, endAngle: 90, clockwise: true)
+                glowPath.line(to: NSPoint(x: w - cornerRadius, y: h))
+                glowPath.appendArc(withCenter: NSPoint(x: w - cornerRadius, y: h - cornerRadius), radius: cornerRadius, startAngle: 90, endAngle: 0, clockwise: true)
+                glowPath.line(to: NSPoint(x: w, y: max(0, h - cornerRadius - 4)))
+            } else {
+                glowPath.move(to: NSPoint(x: 8, y: h - 1.0))
+                glowPath.line(to: NSPoint(x: w - 8, y: h - 1.0))
+            }
+
         case .rounded:
             // General Classic: Smooth Apple Superellipse
             let cornerRadius: CGFloat = isExpandedMode ? 18.0 : 8.0
@@ -298,9 +321,24 @@ public class NotchIslandContentView: NSView {
             path.fill()
 
             // Stroke primary glowing contour
-            glowPath.lineWidth = isExpandedMode ? 1.8 : 2.0
-            activeStrokeColor.withAlphaComponent(isExpandedMode ? 0.9 : 0.85).setStroke()
+            if currentTheme.shapeType == .finelineConstellation {
+                glowPath.lineWidth = isExpandedMode ? 1.0 : 1.2
+                activeStrokeColor.withAlphaComponent(0.95).setStroke()
+            } else {
+                glowPath.lineWidth = isExpandedMode ? 1.8 : 2.0
+                activeStrokeColor.withAlphaComponent(isExpandedMode ? 0.9 : 0.85).setStroke()
+            }
             glowPath.stroke()
+
+            // Constellation Star Dots for Fineline Dark theme
+            if currentTheme.shapeType == .finelineConstellation && isExpandedMode {
+                let dotRadius: CGFloat = 1.25
+                let dot1 = NSBezierPath(ovalIn: NSRect(x: 16 - dotRadius, y: h - 3.5 - dotRadius, width: dotRadius * 2, height: dotRadius * 2))
+                let dot2 = NSBezierPath(ovalIn: NSRect(x: w - 16 - dotRadius, y: h - 3.5 - dotRadius, width: dotRadius * 2, height: dotRadius * 2))
+                activeStrokeColor.setFill()
+                dot1.fill()
+                dot2.fill()
+            }
         }
     }
 
@@ -494,6 +532,32 @@ public class NotchIslandContentView: NSView {
             floatAnim.duration = 2.6
             floatAnim.repeatCount = .infinity
             beaconLayer.add(floatAnim, forKey: "draculaFloat")
+
+        case .finelineCelestialOrbit:
+            // Fineline Celestial Orbit: Pin-sharp micro-needle star with expanding orbital ripples
+            beaconLayer.cornerRadius = 2.0
+            beaconPulseLayer.cornerRadius = 8.0
+            beaconLayer.transform = CATransform3DIdentity
+            beaconPulseLayer.transform = CATransform3DIdentity
+            beaconPulseLayer.borderWidth = 0.75
+            beaconPulseLayer.borderColor = color.withAlphaComponent(0.85).cgColor
+            beaconPulseLayer.backgroundColor = NSColor.clear.cgColor
+
+            let orbitScale = CABasicAnimation(keyPath: "transform.scale")
+            orbitScale.fromValue = 0.5
+            orbitScale.toValue = 2.2
+            orbitScale.duration = 1.6
+            orbitScale.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            orbitScale.repeatCount = .infinity
+            beaconPulseLayer.add(orbitScale, forKey: "orbitScale")
+
+            let orbitFade = CABasicAnimation(keyPath: "opacity")
+            orbitFade.fromValue = 0.95
+            orbitFade.toValue = 0.0
+            orbitFade.duration = 1.6
+            orbitFade.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            orbitFade.repeatCount = .infinity
+            beaconPulseLayer.add(orbitFade, forKey: "orbitFade")
         }
     }
 

@@ -81,6 +81,7 @@
   - **`Matrix Terminal`**: Monospaced squared corners, authentic `Menlo` terminal typography, cascading phosphor green digital rain, text decrypt scramble, blinking cursor (`█`), and square binary blink beacon.
   - **`Sunset Synthwave`**: Continuous pill curve ($R = 22\text{pt}$), authentic 80s `Futura Bold` & `Futura Medium` typography, and expanding neon horizon halo ripple beacon.
   - **`Dracula Gothic`**: Stepped $45^\circ$ gothic micro-bevels, blood-red and royal violet glow, sharp Victorian `Didot Bold` & `Palatino Bold` serif typography, and floating vampire heartbeat beacon.
+  - **`Fineline Dark (Celestial Ink)`**: Minimalist single-needle tattoo $1.0\text{pt}$ hairline contours, celestial constellation micro-dots, elegant `Optima Bold` & `Avenir Light` typography, and dual expanding concentric orbital ripple beacon.
 - ⚙️ **Comprehensive Preferences & About Window (Liquid Sliding Tabs)**:
   - **Active Task Behavior Modes**: Choose between *Click to Expand (Distraction Free)*, *Hover to Expand*, or *Always Expanded*.
   - **Liquid Sliding Tab Bar**: Telegram/iOS dynamic island inspired sliding indicator bubble.
