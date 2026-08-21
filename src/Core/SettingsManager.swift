@@ -7,6 +7,13 @@ public enum ActiveTaskDisplayMode: String, Codable {
     case alwaysExpanded  // Notch automatically stays expanded throughout active tasks
 }
 
+// MARK: - Live Preview Demo State
+public enum NotchPreviewDemoState {
+    case none
+    case demoExpanded
+    case demoCompact
+}
+
 // MARK: - Centralized Persistent Settings Manager (Powered by SQLite3)
 public class SettingsManager {
     public static let shared = SettingsManager()
@@ -27,6 +34,7 @@ public class SettingsManager {
     public var compactHeight: CGFloat = 2.0
 
     public var onSettingsChanged: (() -> Void)?
+    public var onPreviewDemoRequested: ((NotchPreviewDemoState) -> Void)?
 
     private let db = SQLiteStorageManager.shared
 
@@ -81,6 +89,10 @@ public class SettingsManager {
         }
 
         onSettingsChanged?()
+    }
+
+    public func requestPreviewDemo(_ state: NotchPreviewDemoState) {
+        onPreviewDemoRequested?(state)
     }
 
     public func resetDimensionsToDefaults() {

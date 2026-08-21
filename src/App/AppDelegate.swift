@@ -93,6 +93,12 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
 
+        SettingsManager.shared.onPreviewDemoRequested = { [weak self] state in
+            DispatchQueue.main.async {
+                self?.setDemoState(state)
+            }
+        }
+
         // Fast Global Mouse Hover Tracking
         NSEvent.addGlobalMonitorForEvents(matching: [.mouseMoved]) { [weak self] _ in
             self?.checkMouseHover()
@@ -310,6 +316,24 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    private var demoOverride: NotchPreviewDemoState = .none
+    private var demoRevertTimer: Timer?
+
+    public func setDemoState(_ state: NotchPreviewDemoState) {
+        demoRevertTimer?.invalidate()
+        demoRevertTimer = nil
+        demoOverride = state
+        updateNotchDimensions()
+
+        if state != .none {
+            // Auto revert after 2.0s of inactivity back to real agent status
+            demoRevertTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { [weak self] _ in
+                self?.demoOverride = .none
+                self?.updateNotchDimensions()
+            }
+        }
+    }
+
     private func updateNotchDimensions() {
         let expW = SettingsManager.shared.expandedWidth
         let expH = SettingsManager.shared.expandedHeight
@@ -320,7 +344,15 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
         var targetDropH: CGFloat = compH
         var shouldExpand = false
 
-        if currentActivity.state == "idle" {
+        if demoOverride == .demoExpanded {
+            targetW = expW
+            targetDropH = expH
+            shouldExpand = true
+        } else if demoOverride == .demoCompact {
+            targetW = compW
+            targetDropH = compH
+            shouldExpand = false
+        } else if currentActivity.state == "idle" {
             if SettingsManager.shared.idleHoverExpands && isHovered {
                 targetW = expW
                 targetDropH = expH

@@ -551,8 +551,14 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         expWidthValueLabel.stringValue = "\(Int(val)) pt"
         previewBox.previewExpandedWidth = val
 
+        if previewToggle.selectedSegment != 0 {
+            previewToggle.selectedSegment = 0
+            previewBox.isExpandedPreview = true
+        }
+
         SettingsManager.shared.expandedWidth = val
         SettingsManager.shared.saveSettings()
+        SettingsManager.shared.requestPreviewDemo(.demoExpanded)
     }
 
     @objc private func expandedHeightChanged() {
@@ -560,8 +566,14 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         expHeightValueLabel.stringValue = "\(Int(val)) pt"
         previewBox.previewExpandedHeight = val
 
+        if previewToggle.selectedSegment != 0 {
+            previewToggle.selectedSegment = 0
+            previewBox.isExpandedPreview = true
+        }
+
         SettingsManager.shared.expandedHeight = val
         SettingsManager.shared.saveSettings()
+        SettingsManager.shared.requestPreviewDemo(.demoExpanded)
     }
 
     @objc private func compactWidthChanged() {
@@ -569,8 +581,14 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         compWidthValueLabel.stringValue = "\(Int(val)) pt"
         previewBox.previewCompactWidth = val
 
+        if previewToggle.selectedSegment != 1 {
+            previewToggle.selectedSegment = 1
+            previewBox.isExpandedPreview = false
+        }
+
         SettingsManager.shared.compactWidth = val
         SettingsManager.shared.saveSettings()
+        SettingsManager.shared.requestPreviewDemo(.demoCompact)
     }
 
     @objc private func compactHeightChanged() {
@@ -578,19 +596,28 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         compHeightValueLabel.stringValue = "\(Int(val)) pt"
         previewBox.previewCompactHeight = val
 
+        if previewToggle.selectedSegment != 1 {
+            previewToggle.selectedSegment = 1
+            previewBox.isExpandedPreview = false
+        }
+
         SettingsManager.shared.compactHeight = val
         SettingsManager.shared.saveSettings()
+        SettingsManager.shared.requestPreviewDemo(.demoCompact)
     }
 
     @objc private func resetDimensionsClicked() {
         SettingsManager.shared.resetDimensionsToDefaults()
         SensoryManager.shared.triggerHaptic(pattern: .generic)
         refreshControls()
+        SettingsManager.shared.requestPreviewDemo(previewToggle.selectedSegment == 0 ? .demoExpanded : .demoCompact)
     }
 
     @objc private func previewToggleChanged() {
-        previewBox.isExpandedPreview = (previewToggle.selectedSegment == 0)
+        let isExp = (previewToggle.selectedSegment == 0)
+        previewBox.isExpandedPreview = isExp
         SensoryManager.shared.triggerHaptic(pattern: .generic)
+        SettingsManager.shared.requestPreviewDemo(isExp ? .demoExpanded : .demoCompact)
     }
 
     @objc private func activeModeChanged() {
