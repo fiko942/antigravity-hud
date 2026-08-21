@@ -113,7 +113,11 @@ public class ThemeManager {
     public var onThemeChanged: (() -> Void)?
 
     private init() {
-        self.currentTheme = availableThemes[0] // General (Classic) default
+        if let sunset = availableThemes.first(where: { $0.id == "sunset" }) {
+            self.currentTheme = sunset
+        } else {
+            self.currentTheme = availableThemes[0]
+        }
         loadUserTheme()
     }
 
@@ -126,7 +130,7 @@ public class ThemeManager {
     }
 
     public func loadUserTheme() {
-        let active = SQLiteStorageManager.shared.getString("active_theme", default: "general")
+        let active = SQLiteStorageManager.shared.getString("active_theme", default: "sunset")
         if let matched = availableThemes.first(where: { $0.id == active.lowercased() }) {
             self.currentTheme = matched
         }

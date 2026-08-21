@@ -18,20 +18,20 @@ public enum NotchPreviewDemoState {
 public class SettingsManager {
     public static let shared = SettingsManager()
 
-    public var activeTaskDisplayMode: ActiveTaskDisplayMode = .alwaysExpanded
+    public var activeTaskDisplayMode: ActiveTaskDisplayMode = .hoverExpands
     public var idleHoverExpands: Bool = true
     public var soundEnabled: Bool = true
     public var hapticsEnabled: Bool = true
     public var glitchEnabled: Bool = true
     public var launchAtLogin: Bool = true
 
-    // Custom Notch Dimensions (Expanded / Open / Hover / Active)
-    public var expandedWidth: CGFloat = 380.0
-    public var expandedHeight: CGFloat = 46.0
+    // Custom Notch Dimensions (Expanded / Open / Hover / Active) - Defaults: 275 x 44 pt
+    public var expandedWidth: CGFloat = 275.0
+    public var expandedHeight: CGFloat = 44.0
 
-    // Custom Notch Dimensions (Compact / Closed / Idle)
-    public var compactWidth: CGFloat = 185.0
-    public var compactHeight: CGFloat = 2.0
+    // Custom Notch Dimensions (Compact / Closed / Idle) - Defaults: 177 x 6 pt
+    public var compactWidth: CGFloat = 177.0
+    public var compactHeight: CGFloat = 6.0
 
     public var onSettingsChanged: (() -> Void)?
     public var onPreviewDemoRequested: ((NotchPreviewDemoState) -> Void)?
@@ -43,7 +43,7 @@ public class SettingsManager {
     }
 
     public func loadSettings() {
-        let modeStr = db.getString("active_task_display_mode", default: "alwaysExpanded")
+        let modeStr = db.getString("active_task_display_mode", default: "hoverExpands")
         if let mode = ActiveTaskDisplayMode(rawValue: modeStr) {
             self.activeTaskDisplayMode = mode
         }
@@ -55,16 +55,16 @@ public class SettingsManager {
         self.launchAtLogin = db.getBool("launch_at_login", default: true)
 
         // Load custom dimensions with bounds validation (Min expanded & compact width set to 120.0 pt)
-        let expW = CGFloat(db.getDouble("expanded_width", default: 380.0))
+        let expW = CGFloat(db.getDouble("expanded_width", default: 275.0))
         self.expandedWidth = min(max(expW, 120.0), 560.0)
 
-        let expH = CGFloat(db.getDouble("expanded_height", default: 46.0))
+        let expH = CGFloat(db.getDouble("expanded_height", default: 44.0))
         self.expandedHeight = min(max(expH, 24.0), 80.0)
 
-        let compW = CGFloat(db.getDouble("compact_width", default: 185.0))
+        let compW = CGFloat(db.getDouble("compact_width", default: 177.0))
         self.compactWidth = min(max(compW, 120.0), 260.0)
 
-        let compH = CGFloat(db.getDouble("compact_height", default: 2.0))
+        let compH = CGFloat(db.getDouble("compact_height", default: 6.0))
         self.compactHeight = min(max(compH, 0.0), 20.0)
     }
 
@@ -96,21 +96,21 @@ public class SettingsManager {
     }
 
     public func resetDimensionsToDefaults() {
-        self.expandedWidth = 380.0
-        self.expandedHeight = 46.0
-        self.compactWidth = 185.0
-        self.compactHeight = 2.0
+        self.expandedWidth = 275.0
+        self.expandedHeight = 44.0
+        self.compactWidth = 177.0
+        self.compactHeight = 6.0
         saveSettings()
     }
 
     public func resetAllToDefaults() {
-        self.activeTaskDisplayMode = .alwaysExpanded
+        self.activeTaskDisplayMode = .hoverExpands
         self.idleHoverExpands = true
         self.soundEnabled = true
         self.hapticsEnabled = true
         self.glitchEnabled = true
         self.launchAtLogin = true
         resetDimensionsToDefaults()
-        ThemeManager.shared.setTheme(withId: "general")
+        ThemeManager.shared.setTheme(withId: "sunset")
     }
 }
