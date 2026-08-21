@@ -203,9 +203,12 @@ public struct ThemeDefinition {
     /// Creates an attributed string with theme-specific font, kerning (letter-spacing), and color
     public func makeAttributedHeader(text: String, color: NSColor, size: CGFloat = 9.0) -> NSAttributedString {
         let font = makeHeaderFont(size: size)
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.lineBreakMode = .byTruncatingTail
         var attrs: [NSAttributedString.Key: Any] = [
             .font: font,
-            .foregroundColor: color
+            .foregroundColor: color,
+            .paragraphStyle: paragraph
         ]
         if headerKerning != 0.0 {
             attrs[.kern] = headerKerning
@@ -216,9 +219,12 @@ public struct ThemeDefinition {
     /// Creates an attributed string for detail text with theme-specific typography and kerning
     public func makeAttributedDetail(text: String, color: NSColor, size: CGFloat = 11.5) -> NSAttributedString {
         let font = makeDetailFont(size: size)
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.lineBreakMode = .byTruncatingTail
         var attrs: [NSAttributedString.Key: Any] = [
             .font: font,
-            .foregroundColor: color
+            .foregroundColor: color,
+            .paragraphStyle: paragraph
         ]
         if detailKerning != 0.0 {
             attrs[.kern] = detailKerning

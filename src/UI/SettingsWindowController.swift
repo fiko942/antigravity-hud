@@ -254,7 +254,7 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         let rightX: CGFloat = 290
 
         // --- SUBSECTION A: Expanded Mode (Single Row: Width + Height side by side) ---
-        let expSubHeader = makeSubSectionHeader(title: "Posisi Terbuka / Hover / Active (Expanded):", y: currentY)
+        let expSubHeader = makeSubSectionHeader(title: "Open / Hover / Active State (Expanded):", y: currentY)
         settingsContentView.addSubview(expSubHeader)
         currentY += 18
 
@@ -286,7 +286,7 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         currentY += 26
 
         // --- SUBSECTION B: Compact Mode (Single Row: Width + Height side by side) ---
-        let compSubHeader = makeSubSectionHeader(title: "Posisi Tertutup / Idle (Compact):", y: currentY)
+        let compSubHeader = makeSubSectionHeader(title: "Closed / Standby State (Compact Idle):", y: currentY)
         settingsContentView.addSubview(compSubHeader)
         currentY += 18
 

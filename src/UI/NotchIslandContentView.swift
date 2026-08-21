@@ -89,6 +89,9 @@ public class NotchIslandContentView: NSView {
         headerLabel.backgroundColor = .clear
         headerLabel.isBezeled = false
         headerLabel.isEditable = false
+        headerLabel.usesSingleLineMode = true
+        headerLabel.cell?.lineBreakMode = .byTruncatingTail
+        headerLabel.cell?.truncatesLastVisibleLine = true
         addSubview(headerLabel)
 
         detailLabel.font = NSFont.systemFont(ofSize: 11.5, weight: .semibold)
@@ -96,7 +99,10 @@ public class NotchIslandContentView: NSView {
         detailLabel.backgroundColor = .clear
         detailLabel.isBezeled = false
         detailLabel.isEditable = false
+        detailLabel.usesSingleLineMode = true
         detailLabel.lineBreakMode = .byTruncatingTail
+        detailLabel.cell?.lineBreakMode = .byTruncatingTail
+        detailLabel.cell?.truncatesLastVisibleLine = true
         addSubview(detailLabel)
 
         // Vertical 3-Dots Button (Kebab Menu ⋮)
@@ -372,38 +378,38 @@ public class NotchIslandContentView: NSView {
             let dropDownH = h - notchH
             let activeMidY = notchH + (dropDownH / 2)
 
-            // Left Beacon (Safe inside padding X = 20)
-            let beaconCenterX: CGFloat = 20
+            // Left Beacon (Safe inside padding X = 16)
+            let beaconCenterX: CGFloat = 16
             beaconLayer.bounds = CGRect(x: 0, y: 0, width: 8, height: 8)
             beaconLayer.position = CGPoint(x: beaconCenterX, y: activeMidY)
 
             beaconPulseLayer.bounds = CGRect(x: 0, y: 0, width: 16, height: 16)
             beaconPulseLayer.position = CGPoint(x: beaconCenterX, y: activeMidY)
 
-            // Right Vertical 3-Dots Button (⋮) (Safe inside padding X = w - 40)
+            // Right Vertical 3-Dots Button (⋮) (Safe inside padding X = w - 32)
             moreButton.isHidden = false
-            let btnSize: CGFloat = 22
-            moreButton.frame = NSRect(x: w - btnSize - 18, y: activeMidY - (btnSize / 2), width: btnSize, height: btnSize)
+            let btnSize: CGFloat = 20
+            moreButton.frame = NSRect(x: w - btnSize - 12, y: activeMidY - (btnSize / 2), width: btnSize, height: btnSize)
 
             // Right Equalizer (Next to 3-dots button, hides gracefully if width < 190 pt)
-            let eqW: CGFloat = 24
-            let eqH: CGFloat = 20
+            let eqW: CGFloat = 16
+            let eqH: CGFloat = 18
             let showEqualizer = currentActivity.isAnimated && (w >= 190)
             equalizer.isHidden = !showEqualizer
             if showEqualizer {
-                equalizer.frame = CGRect(x: moreButton.frame.minX - eqW - 8, y: activeMidY - (eqH / 2), width: eqW, height: eqH)
+                equalizer.frame = CGRect(x: moreButton.frame.minX - eqW - 6, y: activeMidY - (eqH / 2), width: eqW, height: eqH)
                 equalizer.updateLayout()
             }
 
             // Center Labels (Dynamic Vertical Auto-Centering based on dropDownH)
-            let labelX: CGFloat = 36
+            let labelX: CGFloat = 28
             let rightBound = showEqualizer ? (equalizer.frame.minX - 6) : (moreButton.frame.minX - 6)
             let labelW = max(30, rightBound - labelX)
 
             let isCompactDrop = dropDownH < 38
             let headerH: CGFloat = isCompactDrop ? 12.0 : 13.5
             let detailH: CGFloat = isCompactDrop ? 14.0 : 16.0
-            let spacing: CGFloat = isCompactDrop ? 1.0 : 2.5
+            let spacing: CGFloat = isCompactDrop ? 1.0 : 2.0
             let totalTextH = headerH + spacing + detailH
             let textStartY = activeMidY - (totalTextH / 2)
 
@@ -590,12 +596,35 @@ public class NotchIslandContentView: NSView {
             let headerText: String
             if isMatrix {
                 let stateTag = self.currentActivity.state.uppercased()
-                headerText = "> SYS://AGY.KERNEL [\(stateTag)]"
+                headerText = "> AGY://KERNEL [\(stateTag)]"
             } else {
                 headerText = self.currentActivity.header
             }
 
-            let headerSize: CGFloat = (currentTheme.id == "dracula") ? 8.5 : 9.0
+            let headerSize: CGFloat
+            let detailSize: CGFloat
+
+            switch currentTheme.id {
+            case "sunset":
+                headerSize = 8.0
+                detailSize = 10.8
+            case "matrix":
+                headerSize = 8.0
+                detailSize = 10.2
+            case "dracula":
+                headerSize = 8.2
+                detailSize = 10.8
+            case "cyberpunk":
+                headerSize = 8.8
+                detailSize = 10.8
+            case "fineline":
+                headerSize = 8.2
+                detailSize = 10.8
+            default:
+                headerSize = 8.5
+                detailSize = 11.0
+            }
+
             self.headerLabel.attributedStringValue = currentTheme.makeAttributedHeader(text: headerText, color: color, size: headerSize)
             self.configureBeaconAnimation(for: currentTheme, color: color)
 
@@ -607,7 +636,7 @@ public class NotchIslandContentView: NSView {
             } else {
                 self.stopMatrixTextAnimations()
                 let detailColor = isLight ? NSColor(red: 0.12, green: 0.12, blue: 0.14, alpha: 1.0) : .white
-                self.detailLabel.attributedStringValue = currentTheme.makeAttributedDetail(text: self.currentActivity.detail, color: detailColor, size: 11.5)
+                self.detailLabel.attributedStringValue = currentTheme.makeAttributedDetail(text: self.currentActivity.detail, color: detailColor, size: detailSize)
             }
 
             // Theme-Specific Kebab Menu Button (⋮) Styling
