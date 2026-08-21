@@ -111,9 +111,12 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
             self?.checkMouseHover()
         }
 
-        // Global Mouse Click Monitor
+        // Global Mouse Click Monitor (Left & Right clicks)
         NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown]) { [weak self] _ in
             self?.checkMouseClick()
+        }
+        NSEvent.addGlobalMonitorForEvents(matching: [.rightMouseDown]) { [weak self] event in
+            self?.checkMouseRightClick(event)
         }
 
         // Connect Brain Watcher
@@ -270,26 +273,40 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func checkMouseClick() {
         let mouseLoc = NSEvent.mouseLocation
+        let curW = isHovered ? SettingsManager.shared.expandedWidth : SettingsManager.shared.compactWidth
+        let curDropH = isHovered ? SettingsManager.shared.expandedHeight : SettingsManager.shared.compactHeight
         let notchHitBox = NSRect(
-            x: screenMidX - (currentW / 2) - 10,
-            y: screenTop - currentH - 10,
-            width: currentW + 20,
-            height: currentH + 20
+            x: screenMidX - (curW / 2) - 10,
+            y: screenTop - (notchH + curDropH + 12),
+            width: curW + 20,
+            height: notchH + curDropH + 16
         )
         if notchHitBox.contains(mouseLoc) {
             handleUserClick()
         }
     }
 
-    private func handleUserClick() {
-        if currentActivity.state != "idle" {
-            // When AI is ACTIVE: Click toggles open/close
-            isClickExpanded.toggle()
-            if SettingsManager.shared.hapticsEnabled {
-                SensoryManager.shared.triggerHaptic(pattern: .generic)
-            }
-            updateNotchDimensions()
+    private func checkMouseRightClick(_ event: NSEvent) {
+        let mouseLoc = NSEvent.mouseLocation
+        let curW = isHovered ? SettingsManager.shared.expandedWidth : SettingsManager.shared.compactWidth
+        let curDropH = isHovered ? SettingsManager.shared.expandedHeight : SettingsManager.shared.compactHeight
+        let notchHitBox = NSRect(
+            x: screenMidX - (curW / 2) - 10,
+            y: screenTop - (notchH + curDropH + 12),
+            width: curW + 20,
+            height: notchH + curDropH + 16
+        )
+        if notchHitBox.contains(mouseLoc) {
+            showActionMenu(positionedNear: nil, event: event)
         }
+    }
+
+    private func handleUserClick() {
+        isClickExpanded.toggle()
+        if SettingsManager.shared.hapticsEnabled {
+            SensoryManager.shared.triggerHaptic(pattern: .generic)
+        }
+        updateNotchDimensions()
     }
 
     private func checkMouseHover() {
@@ -303,10 +320,10 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
         let curDropH = isHovered ? expH : compH
 
         let hoverHitBox = NSRect(
-            x: screenMidX - (curW / 2),
-            y: screenTop - (notchH + curDropH + 6),
-            width: curW,
-            height: notchH + curDropH + 8
+            x: screenMidX - (curW / 2) - 10,
+            y: screenTop - (notchH + curDropH + 12),
+            width: curW + 20,
+            height: notchH + curDropH + 16
         )
 
         let inside = hoverHitBox.contains(mouseLoc)
@@ -353,7 +370,8 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
             targetDropH = compH
             shouldExpand = false
         } else if currentActivity.state == "idle" {
-            if SettingsManager.shared.idleHoverExpands && isHovered {
+            // In IDLE: expand if hover is enabled and mouse is inside, OR if user clicked to expand
+            if (SettingsManager.shared.idleHoverExpands && isHovered) || isClickExpanded {
                 targetW = expW
                 targetDropH = expH
                 shouldExpand = true
