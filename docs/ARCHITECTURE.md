@@ -72,3 +72,36 @@ stateDiagram-v2
 2. **Auto-LaunchAgent**:
    - On launch, checks for existence of `~/Library/LaunchAgents/com.google.antigravity.hud.plist`.
    - If missing, automatically generates the plist pointing to `/Applications/AntigravityHUD.app/Contents/MacOS/AntigravityHUD` and registers via `launchctl load -w`.
+
+---
+
+## 5. Native SQLite3 Storage Architecture
+
+- **Engine**: SQLite3 in **Write-Ahead Logging (WAL)** mode.
+- **Database Path**: `~/.config/antigravity-hud/antigravity_hud.sqlite3`.
+- **Concurrency & Latency**: Synchronous writes `< 0.1ms` without blocking main UI thread.
+- **Schema**:
+  ```sql
+  CREATE TABLE IF NOT EXISTS app_settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+  ```
+- **Atomicity**: Atomic disk commits guarantee settings persist through application restarts and macOS system power cycles.
+
+---
+
+## 6. Dynamic Notch Dimension Morphing & Live Demo Pipeline
+
+- **Continuous Dimension Bounds**:
+  - `expandedWidth`: `280.0pt ... 560.0pt` (default `380.0pt`)
+  - `expandedHeight`: `32.0pt ... 80.0pt` (default `46.0pt`)
+  - `compactWidth`: `140.0pt ... 260.0pt` (default `185.0pt`)
+  - `compactHeight`: `0.0pt ... 20.0pt` (default `2.0pt`)
+- **Live Hardware Notch Demo Mode**:
+  - Moving expanded/compact sliders triggers `SettingsManager.shared.requestPreviewDemo()`.
+  - Floating panel instantly adapts frame size live on screen.
+  - Automatically reverts to real AI status after `2.0s` inactivity timeout via non-blocking debounce timer.
+- **Interactive Live Preview Canvas**:
+  - `NotchPreviewBoxView` renders miniature MacBook bezel with dynamic contour Bezier paths scaled at `0.72x` inside Preferences.
