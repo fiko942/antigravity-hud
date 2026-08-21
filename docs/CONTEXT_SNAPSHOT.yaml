@@ -1,0 +1,95 @@
+# ==============================================================================
+# ANTIGRAVITY HUD - REPOSITORY CONTEXT SNAPSHOT (SAVE v5 PROTOCOL)
+# ==============================================================================
+
+SnapshotVersion: "5.0.0"
+LastMergedAt: "2026-08-21T11:53:30+07:00"
+MergeType: "structural"
+AuthorAttribution:
+  Name: "Wiji Fiko Teren"
+  GitHub: "https://github.com/fiko942"
+  Portfolio: "https://wijifikoteren.streampeg.com"
+  Saweria: "https://saweria.co/wijifikoteren"
+
+ProjectOverview:
+  Name: "Antigravity HUD"
+  Type: "macOS Native Dynamic Island & Notch AI Agent HUD"
+  Version: "1.1.0"
+  BinaryTarget: "AntigravityHUD.app"
+  InstallPath: "/Applications/AntigravityHUD.app"
+  RuntimeArchitecture: "Swift Native (AppKit + CoreAnimation + CoreText + SQLite3 WAL)"
+  OperatingSystem: "macOS 13.0+ (Ventura, Sonoma, Sequoia, Tahoe)"
+
+HowToRun:
+  Build: "bash build.sh"
+  LiveInstallAndRestart: |
+    killall AntigravityHUD 2>/dev/null || true && rm -rf /Applications/AntigravityHUD.app && cp -R build/AntigravityHUD.app /Applications/ && open /Applications/AntigravityHUD.app
+  VerifyProcess: "pgrep -fl AntigravityHUD"
+  InteractivePreferences: "Click the (⋮) button on the HUD or launch app preferences"
+
+ArchitectureMap:
+  CoreEngine:
+    - "src/Brain/BrainWatcher.swift": "Universal Multi-Surface Brain Watcher (tail ingestion + 32KB buffer + rotation handling)"
+    - "src/Core/SQLiteStorageManager.swift": "Thread-safe SQLite3 engine with Write-Ahead Logging (WAL) at ~/.config/antigravity-hud/antigravity_hud.sqlite3"
+    - "src/Core/SettingsManager.swift": "Observable centralized preferences manager with reactive notifications"
+    - "src/Core/SensoryManager.swift": "Hardware haptic feedback (NSHapticFeedbackManager) & NSSound chimes"
+    - "src/Core/FontManager.swift": "In-process CoreText automated font registration engine"
+  UISystem:
+    - "src/UI/AntigravityNotchPanel.swift": "Borderless floating NSPanel (level 102) with transparent backing"
+    - "src/UI/NotchIslandContentView.swift": "Dynamic superellipse notch island with multi-theme beacons, 3-dot kebab buttons, and matrix rain"
+    - "src/UI/CyberEqualizerLayer.swift": "6 distinct signature theme equalizer waveforms (sinusoidal, mecha blocks, CRT binary, neon pillars, gothic spikes, fine-needle)"
+    - "src/UI/SettingsWindowController.swift": "Telegram-style liquid sliding bubble preferences window with live preview"
+    - "src/UI/NotchPreviewBoxView.swift": "Live interactive notch preview canvas"
+  ThemeCatalog:
+    - "general": "macOS Classic Dark (SF Pro Bold, Siri breathing pulse, classicWave equalizer, Glass chime)"
+    - "macos-light": "macOS Classic Light (SF Pro Bold, Siri breathing pulse, classicWave equalizer, Glass chime)"
+    - "cyberpunk": "Cyberpunk 2077 Glitch (Helvetica Neue Condensed Black, diamond strobe, cyberpunkBlocks equalizer, Funk chime)"
+    - "matrix": "Matrix Terminal (Menlo Bold, CRT cursor binary blink, matrixBinary equalizer, Morse chime, live text decrypt scramble)"
+    - "sunset": "Sunset Synthwave (Futura Bold, neon horizon halo rings, synthwavePillars equalizer, Hero chime)"
+    - "dracula": "Dracula Gothic (Didot Bold & Palatino Bold, floating vampire heartbeat orb, draculaSpikes equalizer, Basso chime)"
+    - "fineline": "Fineline Dark (Optima Bold & Avenir Light, 1.0pt hairline single-needle constellation, finelineNeedle equalizer, Tink chime)"
+
+DatabaseMap:
+  Engine: "SQLite3 (PRAGMA journal_mode = WAL, PRAGMA synchronous = NORMAL)"
+  DatabasePath: "~/.config/antigravity-hud/antigravity_hud.sqlite3"
+  SchemaBackupPath: "docs/settings_schema.sql"
+  Table: "app_settings (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"
+  DefaultSettings:
+    active_theme: "sunset"
+    active_task_display_mode: "hoverExpands"
+    expanded_width: 275.0
+    expanded_height: 44.0
+    compact_width: 177.59883720930233
+    compact_height: 6.0
+    idle_hover_expands: true
+    sound_enabled: true
+    haptics_enabled: true
+    launch_at_login: true
+
+MultiSurfaceBrainDiscovery:
+  Status: "VERIFIED_ACTIVE"
+  CandidateRoots:
+    - "~/.gemini/antigravity-ide/brain/<conv_id>/.system_generated/logs/transcript.jsonl"
+    - "~/.gemini/antigravity/brain/<conv_id>/.system_generated/logs/transcript.jsonl"
+    - "~/.gemini/antigravity-cli/brain/<conv_id>/.system_generated/logs/transcript.jsonl"
+    - "~/.gemini/brain/<conv_id>/.system_generated/logs/transcript.jsonl"
+    - "~/.antigravity/brain/<conv_id>/.system_generated/logs/transcript.jsonl"
+  FastIPCPath: "/tmp/antigravity-status.json"
+  TailBuffer: "32768 bytes (instant tail capture on session switch)"
+
+Invariants:
+  - "Lock File Mutex: /tmp/antigravity-hud.lock prevents multiple daemon instances"
+  - "Database Integrity: Never bypass SQLiteStorageManager.swift when altering preferences"
+  - "Single-Line Text Rendering: All headers & details must enforce paragraphStyle with byTruncatingTail"
+  - "Zero Direct Git Push: All commits must be made locally using conventional commits"
+  - "Live Build Mandatory: Every code change requires immediate bash build.sh, bundle copy, and pgrep check"
+
+CurrentState:
+  ActiveProcesses: "AntigravityHUD.app running live"
+  LatestCommit: "dd8e1c8"
+  TestMatrix: "28 high-resolution screenshots generated in tests/screenshots/ across all 7 themes and 4 states"
+  ValidationStatus: "PASS - zero text clipping, zero word-wrap bugs, perfect responsive layout"
+
+NextSteps:
+  - "Perform user-driven testing and feature enhancements as requested"
+  - "Maintain full theme and database parity for any new settings"
