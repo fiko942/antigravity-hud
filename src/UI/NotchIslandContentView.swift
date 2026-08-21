@@ -347,17 +347,20 @@ public class NotchIslandContentView: NSView {
             let btnSize: CGFloat = 22
             moreButton.frame = NSRect(x: w - btnSize - 18, y: activeMidY - (btnSize / 2), width: btnSize, height: btnSize)
 
-            // Right Equalizer (Next to 3-dots button)
+            // Right Equalizer (Next to 3-dots button, hides gracefully if width < 190 pt)
             let eqW: CGFloat = 24
             let eqH: CGFloat = 20
-            equalizer.isHidden = !currentActivity.isAnimated
-            equalizer.frame = CGRect(x: moreButton.frame.minX - eqW - 10, y: activeMidY - (eqH / 2), width: eqW, height: eqH)
-            equalizer.updateLayout()
+            let showEqualizer = currentActivity.isAnimated && (w >= 190)
+            equalizer.isHidden = !showEqualizer
+            if showEqualizer {
+                equalizer.frame = CGRect(x: moreButton.frame.minX - eqW - 8, y: activeMidY - (eqH / 2), width: eqW, height: eqH)
+                equalizer.updateLayout()
+            }
 
             // Center Labels (Dynamic Vertical Auto-Centering based on dropDownH)
-            let labelX: CGFloat = 38
-            let rightBound = currentActivity.isAnimated ? (equalizer.frame.minX - 8) : (moreButton.frame.minX - 8)
-            let labelW = max(100, rightBound - labelX)
+            let labelX: CGFloat = 36
+            let rightBound = showEqualizer ? (equalizer.frame.minX - 6) : (moreButton.frame.minX - 6)
+            let labelW = max(30, rightBound - labelX)
 
             let isCompactDrop = dropDownH < 38
             let headerH: CGFloat = isCompactDrop ? 12.0 : 13.5

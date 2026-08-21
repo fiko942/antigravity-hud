@@ -54,15 +54,15 @@ public class SettingsManager {
         self.glitchEnabled = db.getBool("glitch_enabled", default: true)
         self.launchAtLogin = db.getBool("launch_at_login", default: true)
 
-        // Load custom dimensions with bounds validation
+        // Load custom dimensions with bounds validation (Min expanded & compact width set to 120.0 pt)
         let expW = CGFloat(db.getDouble("expanded_width", default: 380.0))
-        self.expandedWidth = min(max(expW, 280.0), 560.0)
+        self.expandedWidth = min(max(expW, 120.0), 560.0)
 
         let expH = CGFloat(db.getDouble("expanded_height", default: 46.0))
-        self.expandedHeight = min(max(expH, 32.0), 80.0)
+        self.expandedHeight = min(max(expH, 24.0), 80.0)
 
         let compW = CGFloat(db.getDouble("compact_width", default: 185.0))
-        self.compactWidth = min(max(compW, 140.0), 260.0)
+        self.compactWidth = min(max(compW, 120.0), 260.0)
 
         let compH = CGFloat(db.getDouble("compact_height", default: 2.0))
         self.compactHeight = min(max(compH, 0.0), 20.0)
