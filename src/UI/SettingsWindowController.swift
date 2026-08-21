@@ -184,10 +184,10 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         visualEffect.blendingMode = .behindWindow
         window.contentView = visualEffect
 
-        // Top Liquid Pill Control
+        // Top Liquid Pill Control (with safe 40pt titlebar top margin)
         pillSegmentedControl = LiquidPillSegmentedControl(
             items: ["⚙️ Settings", "ℹ️ About"],
-            frame: NSRect(x: (560 - 240) / 2, y: 570 - 54, width: 240, height: 32)
+            frame: NSRect(x: (560 - 240) / 2, y: 590 - 72, width: 240, height: 32)
         )
         pillSegmentedControl.onSelectionChanged = { [weak self] index in
             if let tab = SettingsTab(rawValue: index) {
@@ -197,7 +197,7 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         visualEffect.addSubview(pillSegmentedControl)
 
         // Main Container View
-        containerView = NSView(frame: NSRect(x: 0, y: 0, width: 560, height: 570 - 64))
+        containerView = NSView(frame: NSRect(x: 0, y: 0, width: 560, height: 590 - 82))
         visualEffect.addSubview(containerView)
 
         buildSettingsView()
@@ -504,7 +504,7 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
     private func showTab(_ tab: SettingsTab, animated: Bool = true) {
         guard let window = self.window else { return }
 
-        let targetH: CGFloat = (tab == .settings) ? 570.0 : 485.0
+        let targetH: CGFloat = (tab == .settings) ? 590.0 : 510.0
         let targetW: CGFloat = 560.0
 
         let currentFrame = window.frame
@@ -518,8 +518,8 @@ public class SettingsWindowController: NSWindowController, NSWindowDelegate {
         }
 
         let contentH = targetH
-        pillSegmentedControl.frame = NSRect(x: (targetW - 240) / 2, y: contentH - 54, width: 240, height: 32)
-        containerView.frame = NSRect(x: 0, y: 0, width: targetW, height: contentH - 64)
+        pillSegmentedControl.frame = NSRect(x: (targetW - 240) / 2, y: contentH - 72, width: 240, height: 32)
+        containerView.frame = NSRect(x: 0, y: 0, width: targetW, height: contentH - 82)
         settingsScrollView.frame = containerView.bounds
         aboutView.frame = containerView.bounds
 
