@@ -144,11 +144,11 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
                     SensoryManager.shared.playCompletionChime()
                 }
                 if SettingsManager.shared.hapticsEnabled {
-                    SensoryManager.shared.triggerHaptic(pattern: .alignment)
+                    SensoryManager.shared.triggerHaptic()
                 }
             } else if activity.state == "working" || activity.state == "thinking" {
                 if SettingsManager.shared.hapticsEnabled {
-                    SensoryManager.shared.triggerHaptic(pattern: .generic)
+                    SensoryManager.shared.triggerHaptic()
                 }
             } else if activity.state == "idle" {
                 isClickExpanded = false

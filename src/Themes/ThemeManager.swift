@@ -19,6 +19,8 @@ public class ThemeManager {
             detailFontName: nil,
             headerKerning: 0.2,
             detailKerning: 0.0,
+            completionSoundName: "Glass",
+            hapticPattern: .generic,
             palette: ThemePalette(
                 idle: NSColor(red: 0.19, green: 0.82, blue: 0.35, alpha: 1.0),      // #30D158 Ventura Emerald
                 thinking: NSColor(red: 0.69, green: 0.32, blue: 0.87, alpha: 1.0),  // #AF52DE Ventura Siri Purple
@@ -40,6 +42,8 @@ public class ThemeManager {
             detailFontName: nil,
             headerKerning: 0.2,
             detailKerning: 0.0,
+            completionSoundName: "Glass",
+            hapticPattern: .generic,
             palette: ThemePalette(
                 idle: NSColor(red: 0.20, green: 0.78, blue: 0.35, alpha: 1.0),      // #34C759 Apple Green
                 thinking: NSColor(red: 0.60, green: 0.20, blue: 0.90, alpha: 1.0),  // #9933E6 Royal Purple
@@ -61,6 +65,8 @@ public class ThemeManager {
             detailFontName: "Avenir-Black",
             headerKerning: -0.2,
             detailKerning: 0.1,
+            completionSoundName: "Funk",
+            hapticPattern: .levelChange,
             palette: ThemePalette(
                 idle: NSColor(red: 1.0, green: 0.0, blue: 0.45, alpha: 1.0),       // #FF0073 Neon Magenta
                 thinking: NSColor(red: 0.75, green: 0.15, blue: 1.0, alpha: 1.0),  // #BF26FF Electric Violet
@@ -82,6 +88,8 @@ public class ThemeManager {
             detailFontName: "Menlo-Bold",
             headerKerning: 0.8,
             detailKerning: 0.4,
+            completionSoundName: "Morse",
+            hapticPattern: .levelChange,
             palette: ThemePalette(
                 idle: NSColor(red: 0.0, green: 1.0, blue: 0.25, alpha: 1.0),       // #00FF41 Matrix Green
                 thinking: NSColor(red: 0.0, green: 0.56, blue: 0.07, alpha: 1.0),   // #008F11 Deep Terminal
@@ -103,6 +111,8 @@ public class ThemeManager {
             detailFontName: "Futura-Medium",
             headerKerning: 1.2,
             detailKerning: 0.4,
+            completionSoundName: "Hero",
+            hapticPattern: .generic,
             palette: ThemePalette(
                 idle: NSColor(red: 1.0, green: 0.42, blue: 0.0, alpha: 1.0),       // #FF6B00 Sunset Orange
                 thinking: NSColor(red: 1.0, green: 0.0, blue: 0.55, alpha: 1.0),   // #FF008C Neon Magenta
@@ -124,6 +134,8 @@ public class ThemeManager {
             detailFontName: "Palatino-Bold",
             headerKerning: 1.2,
             detailKerning: 0.3,
+            completionSoundName: "Basso",
+            hapticPattern: .generic,
             palette: ThemePalette(
                 idle: NSColor(red: 0.74, green: 0.58, blue: 0.98, alpha: 1.0),     // #BD93F9 Dracula Purple
                 thinking: NSColor(red: 1.0, green: 0.16, blue: 0.33, alpha: 1.0),  // #FF2954 Blood Red
@@ -145,6 +157,8 @@ public class ThemeManager {
             detailFontName: "Avenir-Light",
             headerKerning: 1.6,
             detailKerning: 0.5,
+            completionSoundName: "Tink",
+            hapticPattern: .alignment,
             palette: ThemePalette(
                 idle: NSColor(red: 0.94, green: 0.93, blue: 0.91, alpha: 1.0),      // #F0EFEA Pearl White / Ivory Ink
                 thinking: NSColor(red: 0.65, green: 0.55, blue: 0.98, alpha: 1.0),  // #A78BFA Mystic Nebula Lavender

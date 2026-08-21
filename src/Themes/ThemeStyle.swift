@@ -68,6 +68,8 @@ public struct ThemeDefinition {
     public var detailFontName: String?
     public var headerKerning: CGFloat
     public var detailKerning: CGFloat
+    public var completionSoundName: String
+    public var hapticPattern: NSHapticFeedbackManager.FeedbackPattern
     public var palette: ThemePalette
 
     public init(
@@ -84,6 +86,8 @@ public struct ThemeDefinition {
         detailFontName: String? = nil,
         headerKerning: CGFloat = 0.0,
         detailKerning: CGFloat = 0.0,
+        completionSoundName: String = "Glass",
+        hapticPattern: NSHapticFeedbackManager.FeedbackPattern = .generic,
         palette: ThemePalette
     ) {
         self.id = id
@@ -99,6 +103,8 @@ public struct ThemeDefinition {
         self.detailFontName = detailFontName
         self.headerKerning = headerKerning
         self.detailKerning = detailKerning
+        self.completionSoundName = completionSoundName
+        self.hapticPattern = hapticPattern
         self.palette = palette
     }
 
