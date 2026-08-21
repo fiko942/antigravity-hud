@@ -426,14 +426,24 @@ public class NotchIslandContentView: NSView {
         beaconLayer.isHidden = false
         beaconPulseLayer.isHidden = false
         beaconLayer.opacity = 1.0
+        beaconPulseLayer.opacity = 1.0
+
+        // Comprehensive Layer Reset to avoid property leaks between theme switches
+        beaconLayer.borderWidth = 0.0
+        beaconLayer.borderColor = nil
+        beaconPulseLayer.borderWidth = 0.0
+        beaconPulseLayer.borderColor = nil
+        beaconLayer.cornerRadius = 4.0
+        beaconPulseLayer.cornerRadius = 8.0
+        beaconLayer.transform = CATransform3DIdentity
+        beaconPulseLayer.transform = CATransform3DIdentity
+        beaconPulseLayer.backgroundColor = color.withAlphaComponent(theme.isLightMode ? 0.35 : 0.25).cgColor
 
         switch theme.beaconStyle {
         case .venturaSiriPulse:
             // macOS 13 Ventura organic Siri breathing orb
             beaconLayer.cornerRadius = 4.0
             beaconPulseLayer.cornerRadius = 8.0
-            beaconLayer.transform = CATransform3DIdentity
-            beaconPulseLayer.transform = CATransform3DIdentity
 
             let pulse = CABasicAnimation(keyPath: "transform.scale")
             pulse.fromValue = 0.88
@@ -478,8 +488,6 @@ public class NotchIslandContentView: NSView {
             // Matrix Terminal square cursor stepped binary blink
             beaconLayer.cornerRadius = 0.5
             beaconPulseLayer.cornerRadius = 0.5
-            beaconLayer.transform = CATransform3DIdentity
-            beaconPulseLayer.transform = CATransform3DIdentity
 
             let binaryBlink = CAKeyframeAnimation(keyPath: "opacity")
             binaryBlink.values = [1.0, 1.0, 0.0, 0.0, 1.0]
@@ -492,8 +500,6 @@ public class NotchIslandContentView: NSView {
             // Sunset Synthwave expanding neon horizon halo rings
             beaconLayer.cornerRadius = 4.0
             beaconPulseLayer.cornerRadius = 8.0
-            beaconLayer.transform = CATransform3DIdentity
-            beaconPulseLayer.transform = CATransform3DIdentity
 
             let haloExpand = CABasicAnimation(keyPath: "transform.scale")
             haloExpand.fromValue = 0.9
@@ -512,14 +518,13 @@ public class NotchIslandContentView: NSView {
             beaconPulseLayer.add(haloFade, forKey: "haloFade")
 
         case .draculaGothicHeartbeat:
-            // Dracula Gothic floating eerie vampire double-pulse heartbeat
+            // Dracula Gothic solid floating eerie vampire double-pulse heartbeat
             beaconLayer.cornerRadius = 4.0
             beaconPulseLayer.cornerRadius = 8.0
-            beaconLayer.transform = CATransform3DIdentity
-            beaconPulseLayer.transform = CATransform3DIdentity
+            beaconPulseLayer.backgroundColor = color.withAlphaComponent(0.4).cgColor
 
             let heartbeat = CAKeyframeAnimation(keyPath: "transform.scale")
-            heartbeat.values = [1.0, 1.35, 1.08, 1.5, 1.0, 1.0]
+            heartbeat.values = [1.0, 1.4, 1.1, 1.55, 1.0, 1.0]
             heartbeat.keyTimes = [0.0, 0.18, 0.32, 0.5, 0.72, 1.0]
             heartbeat.duration = 1.3
             heartbeat.repeatCount = .infinity
@@ -537,8 +542,6 @@ public class NotchIslandContentView: NSView {
             // Fineline Celestial Orbit: Pin-sharp micro-needle star with expanding orbital ripples
             beaconLayer.cornerRadius = 2.0
             beaconPulseLayer.cornerRadius = 8.0
-            beaconLayer.transform = CATransform3DIdentity
-            beaconPulseLayer.transform = CATransform3DIdentity
             beaconPulseLayer.borderWidth = 0.75
             beaconPulseLayer.borderColor = color.withAlphaComponent(0.85).cgColor
             beaconPulseLayer.backgroundColor = NSColor.clear.cgColor
@@ -583,7 +586,7 @@ public class NotchIslandContentView: NSView {
             self.beaconLayer.shadowColor = color.cgColor
             self.beaconPulseLayer.backgroundColor = color.withAlphaComponent(isLight ? 0.35 : 0.25).cgColor
 
-            // Typography & Headers
+            // Typography & Headers with safe sizing for wider fonts
             let headerText: String
             if isMatrix {
                 let stateTag = self.currentActivity.state.uppercased()
@@ -592,7 +595,8 @@ public class NotchIslandContentView: NSView {
                 headerText = self.currentActivity.header
             }
 
-            self.headerLabel.attributedStringValue = currentTheme.makeAttributedHeader(text: headerText, color: color, size: 9.0)
+            let headerSize: CGFloat = (currentTheme.id == "dracula") ? 8.5 : 9.0
+            self.headerLabel.attributedStringValue = currentTheme.makeAttributedHeader(text: headerText, color: color, size: headerSize)
             self.configureBeaconAnimation(for: currentTheme, color: color)
 
             // Text Decrypt / Scramble Animation for Matrix Theme
@@ -606,19 +610,37 @@ public class NotchIslandContentView: NSView {
                 self.detailLabel.attributedStringValue = currentTheme.makeAttributedDetail(text: self.currentActivity.detail, color: detailColor, size: 11.5)
             }
 
-            if isLight {
-                self.moreButton.layer?.backgroundColor = NSColor(white: 0.0, alpha: 0.06).cgColor
-                self.moreButton.layer?.borderColor = NSColor(white: 0.0, alpha: 0.16).cgColor
+            // Theme-Specific Kebab Menu Button (⋮) Styling
+            switch currentTheme.buttonShape {
+            case .cyberChamfer:
+                self.moreButton.layer?.cornerRadius = 3.0
+                self.moreButton.layer?.borderWidth = 1.2
+                self.moreButton.layer?.backgroundColor = color.withAlphaComponent(0.16).cgColor
+                self.moreButton.layer?.borderColor = color.withAlphaComponent(0.5).cgColor
                 self.moreButton.attributedTitle = NSAttributedString(
                     string: "⋮",
                     attributes: [
-                        .font: NSFont.systemFont(ofSize: 14, weight: .bold),
-                        .foregroundColor: NSColor(red: 0.22, green: 0.22, blue: 0.25, alpha: 1.0)
+                        .font: NSFont.systemFont(ofSize: 13, weight: .black),
+                        .foregroundColor: color
                     ]
                 )
-            } else {
-                self.moreButton.layer?.backgroundColor = color.withAlphaComponent(0.12).cgColor
-                self.moreButton.layer?.borderColor = color.withAlphaComponent(0.35).cgColor
+            case .matrixBracket:
+                self.moreButton.layer?.cornerRadius = 1.0
+                self.moreButton.layer?.borderWidth = 1.0
+                self.moreButton.layer?.backgroundColor = color.withAlphaComponent(0.1).cgColor
+                self.moreButton.layer?.borderColor = color.withAlphaComponent(0.4).cgColor
+                self.moreButton.attributedTitle = NSAttributedString(
+                    string: "⋮",
+                    attributes: [
+                        .font: NSFont(name: "Menlo-Bold", size: 13) ?? NSFont.monospacedSystemFont(ofSize: 13, weight: .bold),
+                        .foregroundColor: color
+                    ]
+                )
+            case .neonRing:
+                self.moreButton.layer?.cornerRadius = 11.0
+                self.moreButton.layer?.borderWidth = 1.5
+                self.moreButton.layer?.backgroundColor = color.withAlphaComponent(0.18).cgColor
+                self.moreButton.layer?.borderColor = color.cgColor
                 self.moreButton.attributedTitle = NSAttributedString(
                     string: "⋮",
                     attributes: [
@@ -626,9 +648,60 @@ public class NotchIslandContentView: NSView {
                         .foregroundColor: color
                     ]
                 )
+            case .gothicDiamond:
+                self.moreButton.layer?.cornerRadius = 4.0
+                self.moreButton.layer?.borderWidth = 1.2
+                self.moreButton.layer?.backgroundColor = color.withAlphaComponent(0.15).cgColor
+                self.moreButton.layer?.borderColor = color.withAlphaComponent(0.6).cgColor
+                self.moreButton.attributedTitle = NSAttributedString(
+                    string: "⋮",
+                    attributes: [
+                        .font: NSFont(name: "Didot-Bold", size: 14) ?? NSFont.systemFont(ofSize: 14, weight: .bold),
+                        .foregroundColor: color
+                    ]
+                )
+            case .finelineHairline:
+                self.moreButton.layer?.cornerRadius = 11.0
+                self.moreButton.layer?.borderWidth = 0.8
+                self.moreButton.layer?.backgroundColor = NSColor.clear.cgColor
+                self.moreButton.layer?.borderColor = color.withAlphaComponent(0.7).cgColor
+                self.moreButton.attributedTitle = NSAttributedString(
+                    string: "⋮",
+                    attributes: [
+                        .font: NSFont.systemFont(ofSize: 13, weight: .medium),
+                        .foregroundColor: color
+                    ]
+                )
+            case .capsuleCircle:
+                if isLight {
+                    self.moreButton.layer?.cornerRadius = 11.0
+                    self.moreButton.layer?.borderWidth = 1.0
+                    self.moreButton.layer?.backgroundColor = NSColor(white: 0.0, alpha: 0.06).cgColor
+                    self.moreButton.layer?.borderColor = NSColor(white: 0.0, alpha: 0.16).cgColor
+                    self.moreButton.attributedTitle = NSAttributedString(
+                        string: "⋮",
+                        attributes: [
+                            .font: NSFont.systemFont(ofSize: 14, weight: .bold),
+                            .foregroundColor: NSColor(red: 0.22, green: 0.22, blue: 0.25, alpha: 1.0)
+                        ]
+                    )
+                } else {
+                    self.moreButton.layer?.cornerRadius = 11.0
+                    self.moreButton.layer?.borderWidth = 1.0
+                    self.moreButton.layer?.backgroundColor = color.withAlphaComponent(0.12).cgColor
+                    self.moreButton.layer?.borderColor = color.withAlphaComponent(0.35).cgColor
+                    self.moreButton.attributedTitle = NSAttributedString(
+                        string: "⋮",
+                        attributes: [
+                            .font: NSFont.systemFont(ofSize: 14, weight: .bold),
+                            .foregroundColor: color
+                        ]
+                    )
+                }
             }
 
-            self.equalizer.setAnimating(self.currentActivity.isAnimated, color: color.cgColor)
+            // Animate Multi-Themed Audio Equalizer
+            self.equalizer.setAnimating(self.currentActivity.isAnimated, color: color.cgColor, style: currentTheme.equalizerStyle)
 
             // Trigger active chromatic glitch if enabled for current theme
             let shouldGlitch = currentTheme.hasGlitchEffect && (self.currentActivity.state == "working" || self.currentActivity.state == "thinking")

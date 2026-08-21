@@ -140,11 +140,41 @@ public class NotchPreviewBoxView: NSView {
         headerTextLayer.string = theme.makeAttributedHeader(text: headerString, color: color, size: 8.5)
         detailTextLayer.string = theme.makeAttributedDetail(text: detailString, color: detailTextColor, size: 10.5)
 
-        // Equalizer Bars
+        // Equalizer Bars styled by theme
         for (i, bar) in eqBars.enumerated() {
             bar.backgroundColor = color.cgColor
             let heights: [CGFloat] = [12, 16, 10, 14]
-            bar.frame = CGRect(x: CGFloat(i) * 5, y: 16 - heights[i], width: 3, height: heights[i])
+            let w: CGFloat
+            let spacing: CGFloat
+
+            switch theme.equalizerStyle {
+            case .finelineNeedle:
+                w = 1.0
+                spacing = 4.0
+                bar.cornerRadius = 0.5
+            case .cyberpunkBlocks:
+                w = 3.0
+                spacing = 2.0
+                bar.cornerRadius = 0.0
+            case .matrixBinary:
+                w = 2.5
+                spacing = 2.5
+                bar.cornerRadius = 0.0
+            case .synthwavePillars:
+                w = 2.8
+                spacing = 2.5
+                bar.cornerRadius = 1.4
+            case .draculaSpikes:
+                w = 2.2
+                spacing = 2.8
+                bar.cornerRadius = 0.5
+            case .classicWave:
+                w = 2.5
+                spacing = 2.5
+                bar.cornerRadius = 1.25
+            }
+
+            bar.frame = CGRect(x: CGFloat(i) * (w + spacing), y: 16 - heights[i], width: w, height: heights[i])
         }
 
         updateSublayers()

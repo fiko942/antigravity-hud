@@ -73,8 +73,8 @@
 - 🖥️ **Simulated Hardware Notch Live Preview Canvas**:
   - Embedded in Preferences with simulated MacBook display bezel & camera lens.
   - State toggle between **`[ 📌 Open (Expanded) ]`** and **`[ 🔒 Closed (Compact) ]`**.
-  - Synchronously morphs contour geometry and color schemes across all 6 themes.
-- 📐 **6 Distinct Themes with Unique Typography & Beacon Animations**:
+  - Synchronously morphs contour geometry and color schemes across all 7 themes.
+- 📐 **7 Distinct Themes with Unique Typography, Themed Equalizers & Beacon Animations**:
   - **`macOS Classic (Dark)`**: Deep obsidian black with Apple superellipse ($R = 18\text{pt}$), `SF Pro` typography, and organic Siri breathing pulse.
   - **`macOS Classic (Light)`**: Crisp platinum ceramic porcelain drop-down with dark `SF Pro` typography and specular borders.
   - **`Cyberpunk 2077`**: Angular $45^\circ$ sci-fi mecha chamfers + active RGB chromatic shift glitch, heavy `Helvetica Neue Condensed Black` & `Avenir Black` typography, and high-frequency diamond glitch strobe beacon.
