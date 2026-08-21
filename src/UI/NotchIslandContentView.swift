@@ -354,16 +354,23 @@ public class NotchIslandContentView: NSView {
             equalizer.frame = CGRect(x: moreButton.frame.minX - eqW - 10, y: activeMidY - (eqH / 2), width: eqW, height: eqH)
             equalizer.updateLayout()
 
-            // Center Labels
+            // Center Labels (Dynamic Vertical Auto-Centering based on dropDownH)
             let labelX: CGFloat = 38
             let rightBound = currentActivity.isAnimated ? (equalizer.frame.minX - 8) : (moreButton.frame.minX - 8)
             let labelW = max(100, rightBound - labelX)
 
+            let isCompactDrop = dropDownH < 38
+            let headerH: CGFloat = isCompactDrop ? 12.0 : 13.5
+            let detailH: CGFloat = isCompactDrop ? 14.0 : 16.0
+            let spacing: CGFloat = isCompactDrop ? 1.0 : 2.5
+            let totalTextH = headerH + spacing + detailH
+            let textStartY = activeMidY - (totalTextH / 2)
+
             headerLabel.isHidden = false
-            headerLabel.frame = NSRect(x: labelX, y: notchH + 6, width: labelW, height: 14)
+            headerLabel.frame = NSRect(x: labelX, y: textStartY, width: labelW, height: headerH)
 
             detailLabel.isHidden = false
-            detailLabel.frame = NSRect(x: labelX, y: notchH + 22, width: labelW, height: 16)
+            detailLabel.frame = NSRect(x: labelX, y: textStartY + headerH + spacing, width: labelW, height: detailH)
         }
     }
 
