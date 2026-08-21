@@ -102,86 +102,99 @@ public class BrainWatcher {
                let attrs = try? fileManager.attributesOfItem(atPath: logFile),
                let size = attrs[.size] as? UInt64 {
                 currentFileHandle = handle
+                // Read up to 32KB tail so initial state is instantly captured on launch or session switch
+                let readStart: UInt64 = size > 32768 ? size - 32768 : 0
+                handle.seek(toFileOffset: readStart)
+                let initialData = handle.readDataToEndOfFile()
                 currentFileOffset = size
+                parseTranscriptData(initialData)
             }
             return
         }
 
         guard let handle = currentFileHandle,
               let attrs = try? fileManager.attributesOfItem(atPath: logFile),
-              let currentSize = attrs[.size] as? UInt64,
-              currentSize > currentFileOffset else { return }
+              let currentSize = attrs[.size] as? UInt64 else { return }
+
+        if currentSize < currentFileOffset {
+            // File was truncated or rewritten
+            currentFileOffset = 0
+        }
+
+        guard currentSize > currentFileOffset else { return }
 
         handle.seek(toFileOffset: currentFileOffset)
         let data = handle.readDataToEndOfFile()
         currentFileOffset = currentSize
+        parseTranscriptData(data)
+    }
 
-        if let content = String(data: data, encoding: .utf8) {
-            let lines = content.components(separatedBy: "\n").filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
-            for line in lines {
-                if let lineData = line.data(using: .utf8),
-                   let json = try? JSONSerialization.jsonObject(with: lineData) as? [String: Any],
-                   let type = json["type"] as? String {
+    private func parseTranscriptData(_ data: Data) {
+        guard let content = String(data: data, encoding: .utf8) else { return }
+        let lines = content.components(separatedBy: "\n").filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+        for line in lines {
+            if let lineData = line.data(using: .utf8),
+               let json = try? JSONSerialization.jsonObject(with: lineData) as? [String: Any],
+               let type = json["type"] as? String {
 
-                    let stepIndex = json["step_index"] as? Int
-                    let stepPrefix = stepIndex != nil ? "STEP #\(stepIndex!) • " : ""
+                let stepIndex = json["step_index"] as? Int
+                let stepPrefix = stepIndex != nil ? "STEP #\(stepIndex!) • " : ""
 
-                    if type == "USER_INPUT" {
+                if type == "USER_INPUT" {
+                    idleTimer?.invalidate()
+                    updateActivity(
+                        state: "thinking",
+                        header: "ANTIGRAVITY • \(stepPrefix)THINKING",
+                        detail: "Reasoning & planning actions...",
+                        activePath: nil,
+                        isAnimated: true
+                    )
+                } else if type == "PLANNER_RESPONSE" {
+                    if let toolCalls = json["tool_calls"] as? [[String: Any]],
+                       let first = toolCalls.first,
+                       let name = first["name"] as? String {
                         idleTimer?.invalidate()
-                        updateActivity(
-                            state: "thinking",
-                            header: "ANTIGRAVITY • \(stepPrefix)THINKING",
-                            detail: "Reasoning & planning actions...",
-                            activePath: nil,
-                            isAnimated: true
-                        )
-                    } else if type == "PLANNER_RESPONSE" {
-                        if let toolCalls = json["tool_calls"] as? [[String: Any]],
-                           let first = toolCalls.first,
-                           let name = first["name"] as? String {
-                            idleTimer?.invalidate()
-                            let args = first["args"] as? [String: Any] ?? (first["parameters"] as? [String: Any] ?? [:])
-                            let (actionTitle, actionDetail, activePath) = parseToolDetails(toolName: name, args: args)
-
-                            updateActivity(
-                                state: "working",
-                                header: "ANTIGRAVITY • \(stepPrefix)\(actionTitle)",
-                                detail: actionDetail,
-                                activePath: activePath,
-                                isAnimated: true
-                            )
-                        } else {
-                            updateActivity(
-                                state: "done",
-                                header: "ANTIGRAVITY • \(stepPrefix)COMPLETED",
-                                detail: "Task response generated",
-                                activePath: nil,
-                                isAnimated: false
-                            )
-                            idleTimer?.invalidate()
-                            idleTimer = Timer.scheduledTimer(withTimeInterval: 3.5, repeats: false) { [weak self] _ in
-                                self?.updateActivity(
-                                    state: "idle",
-                                    header: "ANTIGRAVITY • READY",
-                                    detail: "Standby for prompt",
-                                    activePath: nil,
-                                    isAnimated: false
-                                )
-                            }
-                        }
-                    } else if isActionExecutionType(type) {
-                        idleTimer?.invalidate()
-                        let (actionTitle, defaultDetail) = actionHeaderAndDetail(for: type)
-                        let toolSummary = json["tool_summary"] as? String ?? (json["tool_action"] as? String ?? defaultDetail)
+                        let args = first["args"] as? [String: Any] ?? (first["parameters"] as? [String: Any] ?? [:])
+                        let (actionTitle, actionDetail, activePath) = parseToolDetails(toolName: name, args: args)
 
                         updateActivity(
                             state: "working",
                             header: "ANTIGRAVITY • \(stepPrefix)\(actionTitle)",
-                            detail: toolSummary,
-                            activePath: nil,
+                            detail: actionDetail,
+                            activePath: activePath,
                             isAnimated: true
                         )
+                    } else {
+                        updateActivity(
+                            state: "done",
+                            header: "ANTIGRAVITY • \(stepPrefix)COMPLETED",
+                            detail: "Task response generated",
+                            activePath: nil,
+                            isAnimated: false
+                        )
+                        idleTimer?.invalidate()
+                        idleTimer = Timer.scheduledTimer(withTimeInterval: 3.5, repeats: false) { [weak self] _ in
+                            self?.updateActivity(
+                                state: "idle",
+                                header: "ANTIGRAVITY • READY",
+                                detail: "Standby for prompt",
+                                activePath: nil,
+                                isAnimated: false
+                            )
+                        }
                     }
+                } else if isActionExecutionType(type) {
+                    idleTimer?.invalidate()
+                    let (actionTitle, defaultDetail) = actionHeaderAndDetail(for: type)
+                    let toolSummary = json["tool_summary"] as? String ?? (json["tool_action"] as? String ?? defaultDetail)
+
+                    updateActivity(
+                        state: "working",
+                        header: "ANTIGRAVITY • \(stepPrefix)\(actionTitle)",
+                        detail: toolSummary,
+                        activePath: nil,
+                        isAnimated: true
+                    )
                 }
             }
         }
