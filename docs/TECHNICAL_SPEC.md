@@ -92,52 +92,49 @@ override func draw(_ dirtyRect: NSRect) {
 }
 ```
 
----
-
-## 4. Dual-State Interaction Engine
+## 4. Multi-Theme Geometry & Sensory Pipeline (7 Themes)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     USER INTERACTION ENGINE                 │
-└──────────────────────────────┬──────────────────────────────┘
-                               │
-               ┌───────────────┴───────────────┐
-               ▼                               ▼
-    ┌──────────────────────┐        ┌──────────────────────┐
-    │   IDLE / READY MODE  │        │     ACTIVE MODE      │
-    │   (Standby State)    │        │  (Thinking/Working)  │
-    └──────────┬───────────┘        └──────────┬───────────┘
-               │                               │
-       ┌───────┴───────┐               ┌───────┴───────┐
-       ▼               ▼               ▼               ▼
- ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
- │ Collapsed│    │ DropDown │    │ Collapsed│    │ DropDown │
- │ 185x34px │    │ 380x74px │    │ 185x34px │    │ 380x74px │
- │  (Rim)   │    │  (Card)  │    │ (Pulsing)│    │  (Card)  │
- └────┬─────┘    └────▲─────┘    └────┬─────┘    └────▲─────┘
-      │               │               │               │
-      └── MouseHover ─┘               └── MouseClick ─┘
+│                      ANTIGRAVITY HUD                        │
+├───────────────────┬───────────────────┬─────────────────────┤
+│ Theme ID          │ Geometry & Beacon │ Equalizer & Chime   │
+├───────────────────┼───────────────────┼─────────────────────┤
+│ macos-light       │ Porcelain Drop    │ Classic Wave / Glass│
+│ general           │ Superellipse Glass│ Classic Wave / Glass│
+│ cyberpunk         │ 45° Mecha Chamfer │ Cyber Blocks / Funk │
+│ matrix            │ Terminal Bracket  │ Binary Scan / Morse │
+│ sunset            │ Continuous Pill   │ Synth Pillars / Hero│
+│ dracula           │ Gothic Bevels     │ Spikes / Basso      │
+│ fineline          │ Hairline & Stars  │ Needle / Tink       │
+└───────────────────┴───────────────────┴─────────────────────┘
 ```
-
-1. **Global Cursor Tracking**:
-   - `NSEvent.addGlobalMonitorForEvents(matching: [.mouseMoved])`
-   - `NSEvent.addLocalMonitorForEvents(matching: [.mouseMoved])`
-   - High-frequency 50ms periodic position verification via `NSEvent.mouseLocation`.
-2. **Global Click Interception**:
-   - `NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown])`
-   - Checks if `notchHitBox.contains(NSEvent.mouseLocation)` and toggles `isClickExpanded`.
 
 ---
 
-## 5. Real-Time Brain Streaming Engine
+## 5. Real-Time Brain Streaming Protocol
 
-### Architecture
-1. **Brain Directory**: `~/.gemini/antigravity-ide/brain/`
-2. **Conversation Transcripts**: `<brain-dir>/<conversation-id>/.system_generated/logs/transcript.jsonl`
-3. **Offset Seeking Protocol**:
-   - Maintains `currentFileOffset: UInt64` for the active conversation log.
-   - Reads only new incremental delta bytes using `FileHandle.readDataToEndOfFile()`.
-   - Parses streaming JSONL records:
+1. **Global Scanning (`~/.gemini/antigravity-ide/brain/`)**:
+   - `BrainWatcher.swift` polls every `100ms` for updated session transcripts.
+   - Parses the latest trajectory steps (`type: PLANNER_RESPONSE`, `USER_INPUT`, `SYSTEM`) and extracts tools / task states (`working`, `thinking`, `done`, `idle`).
+2. **Offset Seeking Protocol**:
+   - Ingests the last `16KB` of the JSONL file or seeks incrementally using `FileHandle`.
+   - Streaming JSONL records mapped:
      - `USER_INPUT` $\rightarrow$ State: `thinking`, Event: `UserInput`
      - `PLANNER_RESPONSE` with `tool_calls` $\rightarrow$ State: `working`, Event: `<tool_name>`
      - `PLANNER_RESPONSE` without `tool_calls` $\rightarrow$ State: `done` (auto-resets to `idle` after 3.5s).
+3. **Event Dispatching**:
+   - Dispatches parsed `AgentActivity` to `AppDelegate` and `NotchIslandContentView` on the Main Dispatch Queue.
+   - Triggers theme-specific audio chimes and haptic patterns via `SensoryManager`.
+
+---
+
+## 6. Native SQLite3 Storage Protocol
+
+All persistent configurations are managed through `~/.gemini/antigravity-hud/settings.sqlite` via `SQLiteStorageManager.swift`:
+- `active_theme_id`
+- `active_task_display_mode`
+- `expanded_width`, `expanded_height`
+- `compact_width`, `compact_height`
+- `idle_hover_expands`, `sound_enabled`, `haptics_enabled`, `launch_at_login`
+

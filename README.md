@@ -51,6 +51,11 @@
 </p>
 
 <p align="center">
+  <b>✒️ Fineline Dark (Celestial Ink - Minimalist Single-Needle Tattoo with Star Constellation)</b><br>
+  <img src="./docs/assets/notch-fineline-working.png" alt="Fineline Dark Working Notch" width="700" />
+</p>
+
+<p align="center">
   <img src="./docs/assets/preferences-window.png" alt="Preferences Window with Live Preview & Sliders" width="380" />
   &nbsp;&nbsp;
   <img src="./docs/assets/about-window.png" alt="About Window with Saweria QR Code" width="380" />
@@ -65,29 +70,32 @@
   - Direct atomic configuration persistence powered by native Darwin SQLite3 (`import SQLite3`).
   - Configured with **WAL (*Write-Ahead Logging*)** for lightning-fast `< 0.1ms` non-blocking disk commits and `< 100KB` RAM footprint.
   - Settings survive application restarts and macOS system reboots.
+- 🔤 **Automated FontManager & Typography Micro-Styling Engine**:
+  - Automatic silent CoreText in-process font registration with zero manual user installation needed.
+  - Custom kerning (letter-spacing) and typographical hierarchy per theme.
 - 📏 **Custom Notch Dimensions (Width & Height) with Live Demo**:
-  - **Expanded / Open (Active & Hover)**: Continuous Width (`280...560pt`, default `380pt`) & Drop Height (`32...80pt`, default `46pt`) sliders.
-  - **Compact / Closed (Idle)**: Continuous Width (`140...260pt`, default `185pt`) & Drop Height (`0...20pt`, default `2pt`) sliders.
+  - **Expanded / Open (Active & Hover)**: Continuous Width (`120...600pt`, default `275pt`) & Drop Height (`30...80pt`, default `44pt`) sliders.
+  - **Compact / Closed (Idle)**: Continuous Width (`120...300pt`, default `177pt`) & Drop Height (`0...25pt`, default `6pt`) sliders.
   - **Live Hardware Demo Mode**: Dragging any slider immediately morphs the physical notch on your screen to demo the exact size, automatically reverting to real AI status after 2 seconds.
   - **🔄 Reset to Defaults**: Single-click button to instantly restore all dimensions to factory defaults.
 - 🖥️ **Simulated Hardware Notch Live Preview Canvas**:
   - Embedded in Preferences with simulated MacBook display bezel & camera lens.
   - State toggle between **`[ 📌 Open (Expanded) ]`** and **`[ 🔒 Closed (Compact) ]`**.
-  - Synchronously morphs contour geometry and color schemes across all 7 themes.
-- 📐 **7 Distinct Themes with Unique Typography, Themed Equalizers & Beacon Animations**:
-  - **`macOS Classic (Dark)`**: Deep obsidian black with Apple superellipse ($R = 18\text{pt}$), `SF Pro` typography, and organic Siri breathing pulse.
-  - **`macOS Classic (Light)`**: Crisp platinum ceramic porcelain drop-down with dark `SF Pro` typography and specular borders.
-  - **`Cyberpunk 2077`**: Angular $45^\circ$ sci-fi mecha chamfers + active RGB chromatic shift glitch, heavy `Helvetica Neue Condensed Black` & `Avenir Black` typography, and high-frequency diamond glitch strobe beacon.
-  - **`Matrix Terminal`**: Monospaced squared corners, authentic `Menlo` terminal typography, cascading phosphor green digital rain, text decrypt scramble, blinking cursor (`█`), and square binary blink beacon.
-  - **`Sunset Synthwave`**: Continuous pill curve ($R = 22\text{pt}$), authentic 80s `Futura Bold` & `Futura Medium` typography, and expanding neon horizon halo ripple beacon.
-  - **`Dracula Gothic`**: Stepped $45^\circ$ gothic micro-bevels, blood-red and royal violet glow, sharp Victorian `Didot Bold` & `Palatino Bold` serif typography, and floating vampire heartbeat beacon.
-  - **`Fineline Dark (Celestial Ink)`**: Minimalist single-needle tattoo $1.0\text{pt}$ hairline contours, celestial constellation micro-dots, elegant `Optima Bold` & `Avenir Light` typography, and dual expanding concentric orbital ripple beacon.
+  - Synchronously morphs contour geometry, equalizers, and color schemes across all 7 themes.
+- 📐 **7 Distinct Themes with Unique Typography, Equalizers & Beacon Animations**:
+  - **`Sunset Synthwave (Horizon)`** *(Default)*: Continuous pill curve ($R = 22\text{pt}$), authentic 80s `Futura Bold` typography, expanding neon horizon halo ripple beacon, `synthwavePillars` equalizer, and `Hero` fanfare chime.
+  - **`macOS Classic (Dark)`**: Deep obsidian black with Apple superellipse ($R = 18\text{pt}$), `SF Pro` typography, organic Siri breathing pulse, `classicWave` equalizer, and `Glass` chime.
+  - **`macOS Classic (Light)`**: Crisp platinum ceramic porcelain drop-down with dark `SF Pro` typography, specular borders, and `Glass` chime.
+  - **`Cyberpunk 2077`**: Angular $45^\circ$ sci-fi mecha chamfers + active RGB chromatic shift glitch, heavy `Helvetica Neue Condensed Black` typography, diamond glitch strobe, `cyberpunkBlocks` equalizer, and `Funk` chime.
+  - **`Matrix Terminal`**: Monospaced squared corners, authentic `Menlo` terminal typography, cascading phosphor green digital rain, text decrypt scramble, blinking cursor (`█`), `matrixBinary` equalizer, and `Morse` chime.
+  - **`Dracula Gothic`**: Stepped $45^\circ$ gothic micro-bevels, blood-red and royal violet glow, sharp Victorian `Didot Bold` & `Palatino Bold` serif typography, floating vampire heartbeat beacon, `draculaSpikes` equalizer, and `Basso` chime.
+  - **`Fineline Dark (Celestial Ink)`**: Minimalist single-needle tattoo $1.0\text{pt}$ hairline contours, celestial constellation micro-dots, elegant `Optima Bold` & `Avenir Light` typography, dual expanding concentric orbital ripple beacon, `finelineNeedle` equalizer, and `Tink` crystalline chime.
 - ⚙️ **Comprehensive Preferences & About Window (Liquid Sliding Tabs)**:
-  - **Active Task Behavior Modes**: Choose between *Click to Expand (Distraction Free)*, *Hover to Expand*, or *Always Expanded*.
+  - **Active Task Behavior Modes**: Choose between *Hover to Expand* (Default), *Click to Expand (Distraction Free)*, or *Always Expanded*.
   - **Liquid Sliding Tab Bar**: Telegram/iOS dynamic island inspired sliding indicator bubble.
   - **Launch at Login**: Auto-register/unregister macOS `LaunchAgent` daemon.
-- 🔊 **Sensory Audio-Haptic Engine**: Tactile trackpad haptic pulses on activity changes and subtle completion audio chimes.
-- ⚡ **Neural Equalizer Waveform**: 4-bar dynamic audio/cyberizer animation rendered with CoreAnimation (`CAKeyframeAnimation`).
+- 🔊 **Sensory Audio-Haptic Engine**: Theme-specific tactile trackpad haptic pulses on activity changes and distinctive completion audio chimes (`Tink`, `Basso`, `Morse`, `Funk`, `Hero`, `Glass`).
+- ⚡ **Signature Theme Audio Waveforms**: 4-bar dynamic audio/cyberizer animation customized per aesthetic.
 - 🔒 **Kernel Mutex**: Single-instance lock via `flock` on `/tmp/antigravity-hud.lock` prevents duplicate processes.
 - 🧠 **Global Real-Time Brain Watcher**: 100ms async polling monitoring `~/.gemini/antigravity-ide/brain/` globally across all active sessions.
 

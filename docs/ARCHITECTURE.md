@@ -8,8 +8,8 @@ This document describes the internal engineering design of **Antigravity HUD**, 
 
 MacBook Liquid Retina XDR displays feature physical camera notches at the top center of the screen:
 - **Screen Bounds (Typical 14" / 16")**: `1470 × 956` points (scaled) / native Retina.
-- **Physical Notch Cutout Width**: `179.0pt` (centered at `X = midX = 735.0`).
-- **Physical Notch Cutout Height**: `32.0pt` to `34.0pt` (`Y = 924.0...956.0`).
+- **Physical Notch Cutout Width**: `177.0pt` to `179.0pt` (centered at `X = midX`).
+- **Physical Notch Cutout Height**: `26.0pt` to `34.0pt`.
 
 ### Coordinate System & Window Level
 - **Coordinate Anchoring**: The custom `NSView` sets `override var isFlipped: Bool { true }` so that `(0, 0)` refers to the top-left edge of the window at the top bezel.
@@ -20,66 +20,52 @@ MacBook Liquid Retina XDR displays feature physical camera notches at the top ce
 
 ## 2. Solid OLED Black Rendering (`drawRect`)
 
-To prevent macOS compositor blending and transparency bleed-through over underlying Menu Bar items (such as `File`, `Edit`, `Terminal`, `Window`, `Help`, and status menus):
+To prevent macOS compositor blending and transparency bleed-through over underlying Menu Bar items:
 - The content view overrides `func draw(_ dirtyRect: NSRect)`.
 - It executes `NSBezierPath.fill()` with `NSColor.black.setFill()`, drawing 100% solid, non-transparent pixels directly into the WindowServer backing store.
-- Glowing neon contour borders are drawn with high-precision anti-aliased Bézier paths matching the status theme color.
+- Glowing neon contour borders and custom theme geometries are drawn with high-precision anti-aliased Bézier paths matching the active status theme color.
 
 ---
 
-## 3. Dual Interaction State Machine
+## 3. Dynamic Interaction State Machine & Task Modes
 
 ```mermaid
 stateDiagram-v2
-    [*] --> IdleCollapsed: App Launch
+    [*] --> IdleCompact: App Launch
 
-    state IdleCollapsed {
-        [*] --> CompactNotch: 185px x 34px (Subtle Emerald Rim)
+    state IdleCompact {
+        [*] --> CompactNotch: 177pt x 32pt (Flush Hardware Notch)
     }
 
     state IdleHovered {
-        [*] --> DropDownCard: 380px x 74px (Status Ready)
+        [*] --> ExpandedCard: 275pt x 70pt (Status Ready)
     }
 
-    state ActivePulsing {
-        [*] --> CompactActiveNotch: 185px x 34px (Neon Purple / Cyan Rim)
+    state ActiveRunning {
+        [*] --> ActiveExpanded: 275pt x 70pt (Live Equalizer + Dynamic Beacon)
     }
 
-    state ActiveExpanded {
-        [*] --> FullActionCard: 380px x 74px (Action Details + Equalizer)
-    }
+    IdleCompact --> IdleHovered: Cursor Enters Notch Area (if idleHoverExpands enabled)
+    IdleHovered --> IdleCompact: Cursor Exits Notch Area
 
-    IdleCollapsed --> IdleHovered: Cursor Enters Notch Area
-    IdleHovered --> IdleCollapsed: Cursor Exits Notch Area
+    IdleCompact --> ActiveRunning: Agent Event (Thinking / Working)
+    IdleHovered --> ActiveRunning: Agent Event (Thinking / Working)
 
-    IdleCollapsed --> ActivePulsing: Agent Event (Thinking / Working)
-    IdleHovered --> ActivePulsing: Agent Event (Thinking / Working)
-
-    ActivePulsing --> ActiveExpanded: User Click on Notch
-    ActiveExpanded --> ActivePulsing: User Click on Notch
-
-    ActivePulsing --> IdleCollapsed: Agent Completes Task (Done -> Idle)
-    ActiveExpanded --> IdleCollapsed: Agent Completes Task (Done -> Idle)
+    ActiveRunning --> IdleCompact: Agent Completes Task (Done -> Idle)
 ```
 
----
-
-## 4. Single-Instance Mutex & Auto-LaunchAgent
-
-1. **Kernel Mutex**:
-   - Uses `flock(fd, LOCK_EX | LOCK_NB)` on `/tmp/antigravity-hud.lock`.
-   - Guaranteed zero duplicate processes even if invoked multiple times.
-2. **Auto-LaunchAgent**:
-   - On launch, checks for existence of `~/Library/LaunchAgents/com.google.antigravity.hud.plist`.
-   - If missing, automatically generates the plist pointing to `/Applications/AntigravityHUD.app/Contents/MacOS/AntigravityHUD` and registers via `launchctl load -w`.
+### Active Task Behavior Modes:
+1. **`hoverExpands`** (Default): Expands when hovered by cursor; compact otherwise.
+2. **`alwaysExpanded`**: Stays expanded whenever an agent task is active.
+3. **`clickOnly`**: Stays compact during active tasks until explicitly clicked.
 
 ---
 
-## 5. Native SQLite3 Storage Architecture
+## 4. Native SQLite3 Storage Architecture
 
 - **Engine**: SQLite3 in **Write-Ahead Logging (WAL)** mode.
-- **Database Path**: `~/.config/antigravity-hud/antigravity_hud.sqlite3`.
-- **Concurrency & Latency**: Synchronous writes `< 0.1ms` without blocking main UI thread.
+- **Database Path**: `~/.gemini/antigravity-hud/settings.sqlite`.
+- **Latency**: Synchronous read/write operations `< 0.1ms`.
 - **Schema**:
   ```sql
   CREATE TABLE IF NOT EXISTS app_settings (
@@ -88,20 +74,36 @@ stateDiagram-v2
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
   ```
-- **Atomicity**: Atomic disk commits guarantee settings persist through application restarts and macOS system power cycles.
+- **Atomicity**: Atomic commits ensure settings survive application restarts and macOS power cycles.
 
 ---
 
-## 6. Dynamic Notch Dimension Morphing & Live Demo Pipeline
+## 5. Automated Font Registration Engine (`FontManager.swift`)
 
-- **Continuous Dimension Bounds**:
-  - `expandedWidth`: `280.0pt ... 560.0pt` (default `380.0pt`)
-  - `expandedHeight`: `32.0pt ... 80.0pt` (default `46.0pt`)
-  - `compactWidth`: `140.0pt ... 260.0pt` (default `185.0pt`)
-  - `compactHeight`: `0.0pt ... 20.0pt` (default `2.0pt`)
-- **Live Hardware Notch Demo Mode**:
-  - Moving expanded/compact sliders triggers `SettingsManager.shared.requestPreviewDemo()`.
-  - Floating panel instantly adapts frame size live on screen.
-  - Automatically reverts to real AI status after `2.0s` inactivity timeout via non-blocking debounce timer.
-- **Interactive Live Preview Canvas**:
-  - `NotchPreviewBoxView` renders miniature MacBook bezel with dynamic contour Bezier paths scaled at `0.72x` inside Preferences.
+- In-process CoreText registration via `CTFontManagerRegisterFontURLs(_: .process, true, ...)`.
+- Automatic synchronization of bundled `.ttf` / `.otf` fonts to `~/Library/Fonts/`.
+- Fallback font cascading to ensure zero missing glyphs or UI layout breakages.
+
+---
+
+## 6. Multi-Theme Geometry, Equalizer & Sensory Catalog (7 Themes)
+
+| Theme | Geometry Contour | Equalizer Waveform | Kebab Button | Completion Chime | Haptic Pattern |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **`macOS Classic (Dark)`** | Apple Superellipse | `.classicWave` | `.capsuleCircle` | `Glass` | `.generic` |
+| **`macOS Classic (Light)`** | Platinum Porcelain | `.classicWave` | `.capsuleCircle` | `Glass` | `.generic` |
+| **`Cyberpunk 2077`** | $45^\circ$ Mecha Chamfers | `.cyberpunkBlocks` | `.cyberChamfer` | `Funk` | `.levelChange` |
+| **`Matrix Terminal`** | Square Terminal Box | `.matrixBinary` | `.matrixBracket` | `Morse` | `.levelChange` |
+| **`Sunset Synthwave`** | Continuous Smooth Pill | `.synthwavePillars` | `.neonRing` | `Hero` | `.generic` |
+| **`Dracula Gothic`** | Stepped Gothic Bevels | `.draculaSpikes` | `.gothicDiamond` | `Basso` | `.generic` |
+| **`Fineline Dark`** | $1.0\text{pt}$ Hairline Constellation | `.finelineNeedle` | `.finelineHairline` | `Tink` | `.alignment` |
+
+---
+
+## 7. Dynamic Notch Dimension Morphing
+
+- **Customizable Dimension Ranges**:
+  - `expandedWidth`: `120.0pt ... 600.0pt` (Default: `275.0pt`)
+  - `expandedHeight`: `30.0pt ... 80.0pt` (Default: `44.0pt`)
+  - `compactWidth`: `120.0pt ... 300.0pt` (Default: `177.0pt`)
+  - `compactHeight`: `0.0pt ... 25.0pt` (Default: `6.0pt`)
