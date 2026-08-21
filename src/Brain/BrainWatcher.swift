@@ -4,7 +4,14 @@ import Foundation
 public class BrainWatcher {
     public var onActivityChanged: ((AgentActivity) -> Void)?
 
-    private let brainPath = ("~/.gemini/antigravity-ide/brain" as NSString).expandingTildeInPath
+    private let brainCandidatePaths: [String] = [
+        ("~/.gemini/antigravity-ide/brain" as NSString).expandingTildeInPath,
+        ("~/.gemini/antigravity/brain" as NSString).expandingTildeInPath,
+        ("~/.gemini/antigravity-cli/brain" as NSString).expandingTildeInPath,
+        ("~/.gemini/brain" as NSString).expandingTildeInPath,
+        ("~/.antigravity/brain" as NSString).expandingTildeInPath,
+        ("~/.config/antigravity/brain" as NSString).expandingTildeInPath
+    ]
     private let directStatusPath = "/tmp/antigravity-status.json"
     private var currentTrackedFile: String? = nil
     private var currentFileHandle: FileHandle? = nil
@@ -22,7 +29,7 @@ public class BrainWatcher {
     public init() {}
 
     public func poll() {
-        // Priority 1: Direct status file for manual/fast injection
+        // Priority 1: Direct status file for manual/fast injection (CLI, Scripts, Hooks)
         if let data = try? Data(contentsOf: URL(fileURLWithPath: directStatusPath)),
            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
            let state = json["state"] as? String {
@@ -45,8 +52,8 @@ public class BrainWatcher {
             return
         }
 
-        // Priority 2: Direct transcript JSONL tailing
-        scanLatestTranscriptDirectly()
+        // Priority 2: Multi-Surface Transcript JSONL Scanning (IDE, 2.0, CLI, Subagents)
+        scanLatestTranscriptAcrossAllSurfaces()
     }
 
     private func updateActivity(state: String, header: String, detail: String, activePath: String?, isAnimated: Bool) {
@@ -68,20 +75,21 @@ public class BrainWatcher {
         onActivityChanged?(currentActivity)
     }
 
-    private func scanLatestTranscriptDirectly() {
+    private func scanLatestTranscriptAcrossAllSurfaces() {
         let fileManager = FileManager.default
-        guard let entries = try? fileManager.contentsOfDirectory(atPath: brainPath) else { return }
-
         var latestFile: String? = nil
         var latestDate: Date = Date.distantPast
 
-        for entry in entries where !entry.hasPrefix(".") && entry != "tempmediaStorage" {
-            let logPath = (brainPath as NSString).appendingPathComponent("\(entry)/.system_generated/logs/transcript.jsonl")
-            if let attrs = try? fileManager.attributesOfItem(atPath: logPath),
-               let modDate = attrs[.modificationDate] as? Date,
-               modDate > latestDate {
-                latestDate = modDate
-                latestFile = logPath
+        for basePath in brainCandidatePaths {
+            guard let entries = try? fileManager.contentsOfDirectory(atPath: basePath) else { continue }
+            for entry in entries where !entry.hasPrefix(".") && entry != "tempmediaStorage" {
+                let logPath = (basePath as NSString).appendingPathComponent("\(entry)/.system_generated/logs/transcript.jsonl")
+                if let attrs = try? fileManager.attributesOfItem(atPath: logPath),
+                   let modDate = attrs[.modificationDate] as? Date,
+                   modDate > latestDate {
+                    latestDate = modDate
+                    latestFile = logPath
+                }
             }
         }
 
