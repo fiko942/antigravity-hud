@@ -58,6 +58,8 @@ public class NotchIslandContentView: NSView {
         wantsLayer = true
 
         // Background Layers: Matrix Rain & Glitch Overlays
+        matrixRain.zPosition = 1
+        glitchOverlay.zPosition = 2
         layer?.addSublayer(matrixRain)
         layer?.addSublayer(glitchOverlay)
 
@@ -68,16 +70,20 @@ public class NotchIslandContentView: NSView {
         }
 
         // Status Beacon
+        beaconPulseLayer.zPosition = 10
         beaconPulseLayer.cornerRadius = 8
         layer?.addSublayer(beaconPulseLayer)
 
+        beaconLayer.zPosition = 11
         beaconLayer.cornerRadius = 4
         beaconLayer.shadowRadius = 5
         beaconLayer.shadowOpacity = 1.0
         beaconLayer.shadowOffset = .zero
         layer?.addSublayer(beaconLayer)
 
-        // Labels
+        // Equalizer
+        equalizer.zPosition = 12
+        layer?.addSublayer(equalizer)
         headerLabel.font = NSFont.monospacedSystemFont(ofSize: 9.0, weight: .black)
         headerLabel.textColor = themeColor
         headerLabel.backgroundColor = .clear
@@ -313,8 +319,11 @@ public class NotchIslandContentView: NSView {
 
         if !isExpandedMode {
             // Idle Compact
-            beaconLayer.frame = CGRect(x: (w / 2) - 3.5, y: h - 6, width: 7, height: 7)
-            beaconPulseLayer.frame = CGRect(x: (w / 2) - 7.5, y: h - 10, width: 15, height: 15)
+            beaconLayer.bounds = CGRect(x: 0, y: 0, width: 7, height: 7)
+            beaconLayer.position = CGPoint(x: w / 2, y: h - 2.5)
+
+            beaconPulseLayer.bounds = CGRect(x: 0, y: 0, width: 15, height: 15)
+            beaconPulseLayer.position = CGPoint(x: w / 2, y: h - 2.5)
 
             headerLabel.isHidden = true
             detailLabel.isHidden = true
@@ -326,9 +335,12 @@ public class NotchIslandContentView: NSView {
             let activeMidY = notchH + (dropDownH / 2)
 
             // Left Beacon (Safe inside padding X = 20)
-            let beaconX: CGFloat = 20
-            beaconLayer.frame = CGRect(x: beaconX, y: activeMidY - 4, width: 8, height: 8)
-            beaconPulseLayer.frame = CGRect(x: beaconX - 4, y: activeMidY - 8, width: 16, height: 16)
+            let beaconCenterX: CGFloat = 20
+            beaconLayer.bounds = CGRect(x: 0, y: 0, width: 8, height: 8)
+            beaconLayer.position = CGPoint(x: beaconCenterX, y: activeMidY)
+
+            beaconPulseLayer.bounds = CGRect(x: 0, y: 0, width: 16, height: 16)
+            beaconPulseLayer.position = CGPoint(x: beaconCenterX, y: activeMidY)
 
             // Right Vertical 3-Dots Button (⋮) (Safe inside padding X = w - 40)
             moreButton.isHidden = false
@@ -362,6 +374,10 @@ public class NotchIslandContentView: NSView {
     private func configureBeaconAnimation(for theme: ThemeDefinition, color: NSColor) {
         beaconLayer.removeAllAnimations()
         beaconPulseLayer.removeAllAnimations()
+
+        beaconLayer.isHidden = false
+        beaconPulseLayer.isHidden = false
+        beaconLayer.opacity = 1.0
 
         switch theme.beaconStyle {
         case .venturaSiriPulse:
@@ -397,14 +413,14 @@ public class NotchIslandContentView: NSView {
             beaconPulseLayer.transform = CATransform3DMakeRotation(.pi / 4, 0, 0, 1)
 
             let strobe = CAKeyframeAnimation(keyPath: "opacity")
-            strobe.values = [1.0, 0.2, 0.9, 0.1, 1.0, 0.3, 0.8, 0.1, 1.0]
+            strobe.values = [0.9, 0.25, 1.0, 0.2, 0.9, 0.35, 1.0, 0.2, 0.9]
             strobe.keyTimes = [0.0, 0.15, 0.22, 0.35, 0.48, 0.62, 0.75, 0.88, 1.0]
             strobe.duration = 0.7
             strobe.repeatCount = .infinity
             beaconPulseLayer.add(strobe, forKey: "cyberStrobe")
 
             let scaleTwitch = CAKeyframeAnimation(keyPath: "transform.scale")
-            scaleTwitch.values = [1.0, 1.4, 0.95, 1.35, 1.0]
+            scaleTwitch.values = [1.0, 1.35, 0.95, 1.25, 1.0]
             scaleTwitch.keyTimes = [0.0, 0.25, 0.5, 0.75, 1.0]
             scaleTwitch.duration = 0.7
             scaleTwitch.repeatCount = .infinity

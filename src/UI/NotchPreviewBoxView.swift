@@ -266,7 +266,8 @@ public class NotchPreviewBoxView: NSView {
         // Positioning elements
         if isExpandedPreview {
             let activeMidY = notchHardwareH + ((targetH - notchHardwareH) / 2)
-            beaconLayer.frame = CGRect(x: startX + 14, y: activeMidY - 3.5, width: 7, height: 7)
+            beaconLayer.bounds = CGRect(x: 0, y: 0, width: 7, height: 7)
+            beaconLayer.position = CGPoint(x: startX + 17.5, y: activeMidY)
 
             let eqW: CGFloat = 20
             equalizerLayer.frame = CGRect(x: startX + targetW - eqW - 14, y: activeMidY - 8, width: eqW, height: 16)
@@ -276,7 +277,8 @@ public class NotchPreviewBoxView: NSView {
             headerTextLayer.frame = CGRect(x: labelX, y: notchHardwareH + 4, width: labelW, height: 12)
             detailTextLayer.frame = CGRect(x: labelX, y: notchHardwareH + 16, width: labelW, height: 14)
         } else {
-            beaconLayer.frame = CGRect(x: (boxW / 2) - 3, y: targetH - 5, width: 6, height: 6)
+            beaconLayer.bounds = CGRect(x: 0, y: 0, width: 6, height: 6)
+            beaconLayer.position = CGPoint(x: boxW / 2, y: targetH - 2.5)
         }
     }
 
