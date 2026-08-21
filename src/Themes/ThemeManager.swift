@@ -110,9 +110,6 @@ public class ThemeManager {
     ]
 
     public var currentTheme: ThemeDefinition
-    public var soundEnabled: Bool = true
-    public var hapticsEnabled: Bool = true
-
     public var onThemeChanged: (() -> Void)?
 
     private init() {
@@ -133,23 +130,19 @@ public class ThemeManager {
         if let matched = availableThemes.first(where: { $0.id == active.lowercased() }) {
             self.currentTheme = matched
         }
-        self.soundEnabled = SQLiteStorageManager.shared.getBool("sound_enabled", default: true)
-        self.hapticsEnabled = SQLiteStorageManager.shared.getBool("haptics_enabled", default: true)
     }
 
     public func saveUserTheme() {
         SQLiteStorageManager.shared.setString("active_theme", value: self.currentTheme.id)
-        SQLiteStorageManager.shared.setBool("sound_enabled", value: self.soundEnabled)
-        SQLiteStorageManager.shared.setBool("haptics_enabled", value: self.hapticsEnabled)
 
-        // Legacy mirror
+        // Legacy mirror file
         let configDir = ("~/.config/antigravity-hud" as NSString).expandingTildeInPath
         let configPath = (configDir as NSString).appendingPathComponent("theme.json")
 
         let configDict: [String: Any] = [
             "activeTheme": self.currentTheme.id,
-            "soundEnabled": self.soundEnabled,
-            "hapticsEnabled": self.hapticsEnabled
+            "soundEnabled": SettingsManager.shared.soundEnabled,
+            "hapticsEnabled": SettingsManager.shared.hapticsEnabled
         ]
 
         try? FileManager.default.createDirectory(atPath: configDir, withIntermediateDirectories: true)
@@ -164,16 +157,6 @@ public class ThemeManager {
         saveUserTheme()
         SensoryManager.shared.triggerHaptic(pattern: .generic)
         onThemeChanged?()
-    }
-
-    public func toggleSound() {
-        soundEnabled.toggle()
-        saveUserTheme()
-    }
-
-    public func toggleHaptics() {
-        hapticsEnabled.toggle()
-        saveUserTheme()
     }
 
     public func color(for state: String) -> NSColor {
